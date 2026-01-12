@@ -17,7 +17,7 @@ export default function PageHeader({ title, subtitle, meta, actions, centered, s
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="-mx-4 -mt-4 bg-orange-400 text-white sm:mx-0 sm:rounded-xl">
+      <div className="-mx-4 -mt-4 bg-orange-400 text-white sm:mx-0 sm:rounded-xl sticky top-0 z-10">
         <div className="mx-auto flex max-w-[760px] items-center px-4 py-4">
           {showBack ? (
             <button
