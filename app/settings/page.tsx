@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import type { TrainingPattern, UserSettings, WeeklyRule } from "@/lib/types";
@@ -27,6 +27,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const skipInitialSave = useRef(true);
+  const saveTimer = useRef<number | null>(null);
 
   const patternOptions = useMemo(() => {
     return [{ id: "", name: "休み（パターンなし）" }, ...patterns.map((p) => ({ id: p.id, name: p.name }))];
@@ -98,7 +100,6 @@ export default function SettingsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Failed to save settings");
-      setMsg("保存しました");
     } catch (e: any) {
       setMsg(e?.message ?? "Failed to save");
     } finally {
@@ -106,46 +107,36 @@ export default function SettingsPage() {
     }
   }
 
+  useEffect(() => {
+    if (skipInitialSave.current) {
+      skipInitialSave.current = false;
+      return;
+    }
+    if (loading) return;
+    if (saveTimer.current) {
+      window.clearTimeout(saveTimer.current);
+    }
+    saveTimer.current = window.setTimeout(() => {
+      void saveSettings();
+    }, 500);
+
+    return () => {
+      if (saveTimer.current) {
+        window.clearTimeout(saveTimer.current);
+      }
+    };
+  }, [weeklyRules, preference, goalText, loading]);
+
   return (
     <div className="page">
       <PageHeader
         title="設定"
         subtitle="曜日ごとのパターン割り当てと提案方針を調整します。"
-        actions={
-          <button className="button button--primary" onClick={saveSettings} disabled={loading || saving}>
-            {saving ? "保存中..." : "保存"}
-          </button>
-        }
       />
 
       {msg ? <div className="notice">{msg}</div> : null}
 
-      <section className="card">
-        <div className="section-title">パターン・機材の管理</div>
-        <div className="page-subtitle">作成・編集は各画面から行います。</div>
-        <div className="settings-links">
-          <Link className="settings-link-card" href="/patterns">
-            <span className="settings-link-icon" aria-hidden="true">
-              📋
-            </span>
-            <div className="stack gap-xs">
-              <span className="settings-link-title">パターン</span>
-              <span className="page-subtitle">トレーニング構成を管理</span>
-            </div>
-          </Link>
-          <Link className="settings-link-card" href="/equipment">
-            <span className="settings-link-icon" aria-hidden="true">
-              🏋️
-            </span>
-            <div className="stack gap-xs">
-              <span className="settings-link-title">機材</span>
-              <span className="page-subtitle">使える機材を登録</span>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      <section className="card">
+      <section className="settings-section">
         <div className="section-title">提案の強度</div>
         <div className="preference-slider">
           <input
@@ -167,7 +158,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="card">
+      <section className="settings-section">
         <div className="section-title">目標（自由記述）</div>
         <div className="page-subtitle">例：週3回継続 / 体重-2kg / レッグプレスを伸ばしたい</div>
         <textarea
@@ -178,7 +169,7 @@ export default function SettingsPage() {
         />
       </section>
 
-      <section className="card">
+      <section className="settings-section">
         <div className="row space-between">
           <div className="section-title">曜日ごとのパターン</div>
           <Link className="icon-button" href="/patterns" aria-label="パターンを編集">
@@ -217,6 +208,31 @@ export default function SettingsPage() {
         {patterns.length === 0 && !loading ? (
           <div className="notice warning">パターンがまだありません。先にパターン画面で作成してください。</div>
         ) : null}
+      </section>
+
+      <section className="settings-section settings-section--subtle">
+        <div className="section-title">パターン・機材の管理</div>
+        <div className="page-subtitle">作成・編集は各画面から行います。</div>
+        <div className="settings-links settings-links--compact">
+          <Link className="settings-link-card" href="/patterns">
+            <span className="settings-link-icon" aria-hidden="true">
+              📋
+            </span>
+            <div className="stack gap-xs">
+              <span className="settings-link-title">パターン</span>
+              <span className="page-subtitle">トレーニング構成を管理</span>
+            </div>
+          </Link>
+          <Link className="settings-link-card" href="/equipment">
+            <span className="settings-link-icon" aria-hidden="true">
+              🏋️
+            </span>
+            <div className="stack gap-xs">
+              <span className="settings-link-title">機材</span>
+              <span className="page-subtitle">使える機材を登録</span>
+            </div>
+          </Link>
+        </div>
       </section>
     </div>
   );
