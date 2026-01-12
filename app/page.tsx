@@ -120,11 +120,15 @@ export default function AppHomePage() {
                   <div
                     key={idx}
                     className={`workout-item${it.done ? " workout-item--done" : ""}`}
-                    onClick={() => toggleDone(idx)}
+                    onClick={() => {
+                      if (editingIndex === idx) return;
+                      toggleDone(idx);
+                    }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
+                        if (editingIndex === idx) return;
                         e.preventDefault();
                         toggleDone(idx);
                       }

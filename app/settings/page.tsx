@@ -1,25 +1,14 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { TrainingPattern, UserSettings, WeeklyRule } from "@/lib/types";
+import type { UserSettings } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuth uidに差し替え
-
-const DOW_LABELS = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
-function defaultWeeklyRules(): WeeklyRule[] {
-  return Array.from({ length: 7 }).map((_, i) => ({
-    dayOfWeek: i,
-    patternId: null,
-  }));
-}
 
 export default function SettingsPage() {
   const uid = FAKE_UID;
 
-  const [patterns, setPatterns] = useState<TrainingPattern[]>([]);
-  const [weeklyRules, setWeeklyRules] = useState<WeeklyRule[]>(defaultWeeklyRules());
   const [preference, setPreference] = useState<UserSettings["preference"]>("normal");
   const [goalText, setGoalText] = useState<string>("");
 
@@ -29,45 +18,25 @@ export default function SettingsPage() {
   const skipInitialSave = useRef(true);
   const saveTimer = useRef<number | null>(null);
 
-  const patternOptions = useMemo(() => {
-    return [{ id: "", name: "休み（パターンなし）" }, ...patterns.map((p) => ({ id: p.id, name: p.name }))];
-  }, [patterns]);
-
   useEffect(() => {
     (async () => {
       setLoading(true);
       setMsg("");
       try {
-        const [pRes, sRes] = await Promise.all([
-          fetch("/api/patterns/list", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uid }),
-          }),
-          fetch("/api/settings/get", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uid }),
-          }),
-        ]);
+        const sRes = await fetch("/api/settings/get", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid }),
+        });
 
-        const pJson = await pRes.json();
         const sJson = await sRes.json();
 
-        if (!pRes.ok) throw new Error(pJson?.error ?? "Failed to load patterns");
         if (!sRes.ok) throw new Error(sJson?.error ?? "Failed to load settings");
-
-        setPatterns(pJson.patterns ?? []);
 
         const settings: UserSettings | null = sJson.settings ?? null;
 
         setPreference(settings?.preference ?? "normal");
         setGoalText(settings?.goalText ?? "");
-
-        const base = defaultWeeklyRules();
-        const incoming: WeeklyRule[] = settings?.weeklyRules ?? [];
-        const merged = base.map((b) => incoming.find((r) => r.dayOfWeek === b.dayOfWeek) ?? b);
-        setWeeklyRules(merged);
       } catch (e: any) {
         setMsg(e?.message ?? "Failed to load");
       } finally {
@@ -75,11 +44,6 @@ export default function SettingsPage() {
       }
     })();
   }, [uid]);
-
-  function updateRule(dow: number, patternIdRaw: string) {
-    const patternId = patternIdRaw === "" ? null : patternIdRaw;
-    setWeeklyRules((prev) => prev.map((r) => (r.dayOfWeek === dow ? { ...r, patternId } : r)));
-  }
 
   async function saveSettings() {
     setSaving(true);
@@ -90,7 +54,6 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid,
-          weeklyRules,
           preference,
           goalText,
         }),
@@ -122,7 +85,7 @@ export default function SettingsPage() {
         window.clearTimeout(saveTimer.current);
       }
     };
-  }, [weeklyRules, preference, goalText, loading]);
+  }, [preference, goalText, loading]);
 
   return (
     <div className="page">
@@ -162,44 +125,11 @@ export default function SettingsPage() {
       </section>
 
       <section className="card">
-        <div className="row space-between">
-          <div className="section-title">曜日ごとのパターン</div>
-          <Link className="icon-button" href="/patterns" aria-label="パターンを編集">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              edit
-            </span>
-          </Link>
-        </div>
-        {loading ? (
-          <div className="page-subtitle">読み込み中...</div>
-        ) : (
-          <div className="stack">
-            {weeklyRules
-              .slice()
-              .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-              .map((r) => (
-                <div key={r.dayOfWeek} className="row space-between weekly-rule-row">
-                  <div className="badge">{DOW_LABELS[r.dayOfWeek]}</div>
-                  <select
-                    value={r.patternId ?? ""}
-                    onChange={(e) => updateRule(r.dayOfWeek, e.target.value)}
-                    className="select"
-                    style={{ maxWidth: 260 }}
-                  >
-                    {patternOptions.map((p) => (
-                      <option key={p.id || "rest"} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-          </div>
-        )}
-
-        {patterns.length === 0 && !loading ? (
-          <div className="notice warning">パターンがまだありません。先にパターン画面で作成してください。</div>
-        ) : null}
+        <div className="section-title">曜日ごとのパターン</div>
+        <div className="page-subtitle">曜日ごとのトレーニングを設定します。</div>
+        <Link className="button button--outline" href="/settings/weekly">
+          曜日ごとのパターン
+        </Link>
       </section>
 
       <section className="card">
