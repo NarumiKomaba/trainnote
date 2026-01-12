@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import type { TrainingPattern, UserSettings, WeeklyRule } from "@/lib/types";
 
@@ -118,6 +119,31 @@ export default function SettingsPage() {
       />
 
       {msg ? <div className="notice">{msg}</div> : null}
+
+      <section className="card">
+        <div className="section-title">パターン・機材の管理</div>
+        <div className="page-subtitle">作成・編集は各画面から行います。</div>
+        <div className="settings-links">
+          <Link className="settings-link-card" href="/patterns">
+            <span className="settings-link-icon" aria-hidden="true">
+              📋
+            </span>
+            <div className="stack gap-xs">
+              <span className="settings-link-title">パターン</span>
+              <span className="page-subtitle">トレーニング構成を管理</span>
+            </div>
+          </Link>
+          <Link className="settings-link-card" href="/equipment">
+            <span className="settings-link-icon" aria-hidden="true">
+              🏋️
+            </span>
+            <div className="stack gap-xs">
+              <span className="settings-link-title">機材</span>
+              <span className="page-subtitle">使える機材を登録</span>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       <section className="card">
         <div className="section-title">提案の強度</div>

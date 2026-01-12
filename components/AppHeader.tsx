@@ -19,11 +19,7 @@ export default function AppHeader() {
         <div className="app-header__top">
           <div>
             <div className="app-header__title">TrainNote</div>
-            <div className="app-header__subtitle">スマホでサッと記録、迷わない動線に</div>
           </div>
-          <Link className="button button--outline" href="/patterns/new">
-            ＋ 新規パターン
-          </Link>
         </div>
         <nav className="app-nav" aria-label="メインナビゲーション">
           {NAV_ITEMS.map((item) => {
