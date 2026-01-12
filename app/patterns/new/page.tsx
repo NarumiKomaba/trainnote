@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
 import type { Equipment, TrainingPattern } from "@/lib/types";
 
 const FAKE_UID = "demo-user";
@@ -106,156 +108,107 @@ export default function PatternNewPage() {
   const typeHint = TYPE_OPTIONS.find((o) => o.value === type)?.hint ?? "";
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>パターン作成</h1>
-          <div style={{ opacity: 0.7, fontSize: 13 }}>やること（自由記述）と、使える機材をセットで登録</div>
-        </div>
+    <div className="page">
+      <PageHeader
+        title="パターン作成"
+        subtitle="やること（自由記述）と使える機材をセットで登録します。"
+        actions={
+          <div className="row">
+            <Link className="button button--ghost" href="/patterns">
+              戻る
+            </Link>
+            <button className="button button--primary" onClick={save} disabled={saving}>
+              {saving ? "保存中..." : "保存"}
+            </button>
+          </div>
+        }
+      />
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href="/patterns"
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #ddd",
-              background: "white",
-              textDecoration: "none",
-            }}
-          >
-            戻る
-          </a>
-          <button
-            onClick={save}
-            disabled={saving}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #111",
-              background: "#111",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            {saving ? "保存中..." : "保存"}
-          </button>
-        </div>
-      </header>
+      {msg ? <div className="notice">{msg}</div> : null}
 
-      {msg ? (
-        <div style={{ marginTop: 12, padding: 10, borderRadius: 12, background: "#f5f5f5" }}>{msg}</div>
-      ) : null}
+      <section className="card">
+        <div className="section-title">基本情報</div>
 
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>基本情報</h2>
-
-        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>パターン名</span>
+        <div className="stack">
+          <label className="stack gap-xs">
+            <span className="label">パターン名</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例：ジム脚 / 家トレ体幹 / ストレッチ20分"
-              style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
+              className="input"
             />
           </label>
 
-          <div style={{ display: "grid", gap: 8 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>タイプ</span>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="stack gap-xs">
+            <span className="label">タイプ</span>
+            <div className="row" style={{ flexWrap: "wrap" }}>
               {TYPE_OPTIONS.map((o) => (
                 <button
                   key={o.value}
                   type="button"
                   onClick={() => setType(o.value)}
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 14,
-                    border: type === o.value ? "2px solid #111" : "1px solid #ddd",
-                    background: "white",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    minWidth: 160,
-                  }}
+                  className={`chip${type === o.value ? " chip--active" : ""}`}
                 >
-                  <div style={{ fontWeight: 800 }}>{o.label}</div>
-                  <div style={{ opacity: 0.7, fontSize: 12, marginTop: 2 }}>{o.hint}</div>
+                  <div style={{ fontWeight: 700 }}>{o.label}</div>
+                  <div className="page-subtitle" style={{ marginTop: 2 }}>
+                    {o.hint}
+                  </div>
                 </button>
               ))}
             </div>
-            <div style={{ opacity: 0.7, fontSize: 12 }}>選択中: {typeHint}</div>
+            <div className="page-subtitle">選択中: {typeHint}</div>
           </div>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>やること（自由記述）</span>
+          <label className="stack gap-xs">
+            <span className="label">やること（自由記述）</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={
                 "例：\n・ウォームアップ 5分\n・脚：レッグプレス / レッグエクステンション\n・余裕があれば有酸素10分\n\n※ここはGeminiが“今日の提案”を作る時の制約・意図として使います"
               }
-              style={{
-                width: "100%",
-                minHeight: 140,
-                padding: 12,
-                borderRadius: 12,
-                border: "1px solid #ddd",
-                resize: "vertical",
-              }}
+              className="textarea"
             />
           </label>
         </div>
       </section>
 
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>使える機材（任意）</h2>
-        <div style={{ marginTop: 8, opacity: 0.7, fontSize: 13 }}>
+      <section className="card">
+        <div className="section-title">使える機材（任意）</div>
+        <div className="page-subtitle">
           ここで選んだ機材をGeminiの提案に渡します。未選択の場合は「制限なし」として扱います。
         </div>
 
-        <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="row" style={{ flexWrap: "wrap" }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="機材を検索（例：プレス、ロー、ダンベル）"
-            style={{ flex: "1 1 260px", padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
+            className="input"
+            style={{ flex: "1 1 220px" }}
           />
           <button
             type="button"
             onClick={selectAllFiltered}
             disabled={loading || filtered.length === 0}
-            style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", background: "white" }}
+            className="button"
           >
             表示中を全選択
           </button>
-          <button
-            type="button"
-            onClick={clearSelection}
-            disabled={Object.keys(selected).length === 0}
-            style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", background: "white" }}
-          >
+          <button type="button" onClick={clearSelection} disabled={Object.keys(selected).length === 0} className="button">
             解除
           </button>
-          <div style={{ opacity: 0.8, fontSize: 13 }}>選択: {selectedIds.length} 件</div>
+          <div className="badge">選択: {selectedIds.length} 件</div>
         </div>
 
-        <div style={{ marginTop: 12 }}>
+        <div>
           {loading ? (
-            <div style={{ opacity: 0.7 }}>機材を読み込み中...</div>
+            <div className="page-subtitle">機材を読み込み中...</div>
           ) : equipment.length === 0 ? (
-            <div style={{ padding: 12, borderRadius: 12, background: "#fff7e6" }}>
-              まだ機材が登録されていません。機材未選択でもパターンは作成できます（制限なし扱い）。
-            </div>
+            <div className="notice warning">まだ機材が登録されていません。機材未選択でもパターンは作成できます。</div>
           ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 10,
-                marginTop: 10,
-              }}
-            >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
               {filtered.map((e) => {
                 const checked = !!selected[e.id];
                 return (
@@ -263,27 +216,15 @@ export default function PatternNewPage() {
                     key={e.id}
                     type="button"
                     onClick={() => toggle(e.id)}
-                    style={{
-                      borderRadius: 14,
-                      border: checked ? "2px solid #111" : "1px solid #eee",
-                      background: "white",
-                      padding: 12,
-                      textAlign: "left",
-                      cursor: "pointer",
-                    }}
+                    className={`card${checked ? "" : ""}`}
+                    style={{ textAlign: "left", border: checked ? "2px solid #111827" : "1px solid var(--border)" }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ fontWeight: 850 }}>{e.name}</div>
-                      <div style={{ opacity: 0.7, fontSize: 12 }}>{e.unit}</div>
+                    <div className="row space-between">
+                      <div style={{ fontWeight: 700 }}>{e.name}</div>
+                      <div className="page-subtitle">{e.unit}</div>
                     </div>
-                    {e.note ? (
-                      <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12, lineHeight: 1.4 }}>
-                        {e.note}
-                      </div>
-                    ) : null}
-                    <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
-                      {checked ? "選択中" : "未選択"}
-                    </div>
+                    {e.note ? <div className="page-subtitle">{e.note}</div> : null}
+                    <div className="page-subtitle">{checked ? "選択中" : "未選択"}</div>
                   </button>
                 );
               })}
