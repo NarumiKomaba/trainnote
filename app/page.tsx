@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import PageHeader from "@/components/PageHeader";
 import type { DailyPlan, WorkoutResultItem } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuthのuidに差し替え
@@ -100,43 +99,20 @@ export default function AppHomePage() {
 
   return (
     <div className="page">
-      <PageHeader title="ホーム" centered />
-
       {message ? <div className="notice">{message}</div> : null}
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3">
-          <div>
-            <div className="section-title">達成率</div>
-            <div className="text-3xl font-bold text-orange-600">{progressPercent}%</div>
-            <div className="page-subtitle">完了 {doneCount}/{allCount}</div>
-          </div>
-          <div aria-label="進捗">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-              <div className="h-full rounded-full bg-orange-500" style={{ width: `${progressPercent}%` }} />
-            </div>
-          </div>
+      <section className="flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200" aria-label="進捗">
+          <div className="h-full rounded-full bg-orange-500" style={{ width: `${progressPercent}%` }} />
+        </div>
+        <div className="text-sm font-semibold text-slate-500">
+          {doneCount}/{allCount}
         </div>
       </section>
 
       <section>
         {plan ? (
           <div className="stack">
-            <div className="row space-between">
-              <div>
-                <div className="section-title">{plan.theme}</div>
-                <div className="page-subtitle">今日のメニュー</div>
-              </div>
-              <div className="progress" aria-label="進捗">
-                <div className="progress__track">
-                  <div className="progress__fill" style={{ width: `${progressPercent}%` }} />
-                </div>
-                <div className="progress__label">
-                  {doneCount}/{allCount}
-                </div>
-              </div>
-            </div>
-
             <div className="stack">
               {items.map((it, idx) => {
                 const isEditing = editingIndex === idx;

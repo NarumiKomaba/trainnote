@@ -15,6 +15,7 @@ export default function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isSettings = pathname === "/settings";
   const today = new Date();
   const dateOffsets = [-2, -1, 0, 1, 2];
   const dateList = dateOffsets.map((offset) => {
@@ -25,7 +26,7 @@ export default function AppHeader() {
 
   if (isHome) {
     return (
-      <header className="sticky top-0 z-10 bg-orange-500 text-white">
+      <header className="sticky top-0 z-10 bg-orange-400 text-white">
         <div className="mx-auto flex max-w-[760px] flex-col gap-4 px-4 pb-5 pt-4">
           <div className="flex items-center justify-between gap-3">
             <Link className="inline-flex h-9 w-9 items-center justify-center" href="/patterns" aria-label="メニュー">
@@ -48,7 +49,7 @@ export default function AppHeader() {
                   key={offset}
                   className={`min-w-[52px] rounded-full border-2 px-3 py-2 text-center text-sm font-semibold ${
                     isToday
-                      ? "border-white bg-white text-orange-600"
+                      ? "border-white bg-white text-orange-500"
                       : "border-white/70 bg-white/10 text-white"
                   }`}
                   role="listitem"
@@ -59,6 +60,16 @@ export default function AppHeader() {
               );
             })}
           </div>
+        </div>
+      </header>
+    );
+  }
+
+  if (isSettings) {
+    return (
+      <header className="sticky top-0 z-10 bg-orange-400 text-white">
+        <div className="mx-auto flex max-w-[760px] items-center justify-center px-4 py-4">
+          <div className="text-base font-semibold">設定</div>
         </div>
       </header>
     );

@@ -318,7 +318,7 @@ a {
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   cursor: pointer;
   background: var(--card);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
