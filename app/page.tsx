@@ -103,7 +103,7 @@ export default function AppHomePage() {
 
       {message ? <div className="notice">{message}</div> : null}
 
-      <section className="card">
+      <section>
         {plan ? (
           <div className="stack">
             <div className="row space-between">
