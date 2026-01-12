@@ -10,7 +10,11 @@ type PageHeaderProps = {
 
 export default function PageHeader({ title, subtitle, meta, actions, centered }: PageHeaderProps) {
   return (
-    <div className={`page-header${centered ? " page-header--centered" : ""}`}>
+    <div
+      className={`flex flex-col gap-3 ${
+        centered ? "items-center text-center" : "md:flex-row md:items-center md:justify-between"
+      }`}
+    >
       <div className="stack gap-xs">
         <div className="page-title">{title}</div>
         {subtitle ? <div className="page-subtitle">{subtitle}</div> : null}

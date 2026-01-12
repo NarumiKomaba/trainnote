@@ -99,23 +99,21 @@ export default function AppHomePage() {
   }
 
   return (
-    <div className="page page--home">
+    <div className="page">
       <PageHeader title="ホーム" centered />
 
       {message ? <div className="notice">{message}</div> : null}
 
-      <section className="card">
-        <div className="home-summary">
+      <section className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3">
           <div>
             <div className="section-title">達成率</div>
-            <div className="home-summary__value">{progressPercent}%</div>
-            <div className="page-subtitle">
-              完了 {doneCount}/{allCount}
-            </div>
+            <div className="text-3xl font-bold text-orange-600">{progressPercent}%</div>
+            <div className="page-subtitle">完了 {doneCount}/{allCount}</div>
           </div>
-          <div className="home-summary__meter" aria-label="進捗">
-            <div className="progress__track">
-              <div className="progress__fill" style={{ width: `${progressPercent}%` }} />
+          <div aria-label="進捗">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full rounded-full bg-orange-500" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         </div>
