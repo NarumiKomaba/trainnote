@@ -89,50 +89,46 @@ export default function AppHomePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-4">
+    <div className="page">
       <PageHeader
         title="今日のトレーニング"
         subtitle="提案内容をチェックして、完了したら保存します。"
-        meta={<span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">{dateKey}</span>}
+        meta={<span className="badge">{dateKey}</span>}
         actions={
-          <button
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-            onClick={loadPlan}
-            disabled={loading}
-          >
+          <button className="button button--ghost" onClick={loadPlan} disabled={loading}>
             {loading ? "生成中..." : "提案を更新"}
           </button>
         }
       />
 
-      {message ? <div className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-slate-700">{message}</div> : null}
+      {message ? <div className="notice">{message}</div> : null}
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="card">
         {plan ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-3">
+          <div className="stack">
+            <div className="row space-between">
               <div>
-                <div className="text-sm font-semibold text-slate-900">{plan.theme}</div>
-                <div className="text-xs text-slate-500">今日のメニュー</div>
+                <div className="section-title">{plan.theme}</div>
+                <div className="page-subtitle">今日のメニュー</div>
               </div>
-              <div className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+              <div className="badge">
                 進捗 {doneCount}/{allCount}
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="stack">
               {items.map((it, idx) => (
-                <div key={idx} className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-3">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <div key={idx} className="workout-item">
+                  <label className="row">
                     <input
                       type="checkbox"
                       checked={it.done}
                       onChange={(e) => updateItem(idx, { done: e.target.checked })}
                     />
-                    {it.name}
+                    <span className="workout-title">{it.name}</span>
                   </label>
 
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <div className="workout-fields">
                     <Field
                       label="重量(kg)"
                       value={it.weight ?? ""}
@@ -155,25 +151,21 @@ export default function AppHomePage() {
                     />
                   </div>
 
-                  {it.reason ? <div className="text-xs text-slate-500">理由: {it.reason}</div> : null}
-                  {it.note ? <div className="text-xs text-slate-500">メモ: {it.note}</div> : null}
+                  {it.reason ? <div className="page-subtitle">理由: {it.reason}</div> : null}
+                  {it.note ? <div className="page-subtitle">メモ: {it.note}</div> : null}
                 </div>
               ))}
-              {items.length === 0 ? <div className="text-sm text-slate-500">今日は休養日か、メニューが空です。</div> : null}
+              {items.length === 0 ? <div className="page-subtitle">今日は休養日か、メニューが空です。</div> : null}
             </div>
 
-            <div>
-              <button
-                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                onClick={save}
-                disabled={saving || !plan}
-              >
+            <div className="row">
+              <button className="button button--primary" onClick={save} disabled={saving || !plan}>
                 {saving ? "保存中..." : "完了して保存"}
               </button>
             </div>
           </div>
         ) : (
-          <div className="text-sm text-slate-500">{loading ? "生成中..." : "未読み込み"}</div>
+          <div className="page-subtitle">{loading ? "生成中..." : "未読み込み"}</div>
         )}
       </section>
     </div>
@@ -190,10 +182,10 @@ function Field({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs text-slate-500">{label}</span>
+    <label className="stack gap-xs">
+      <span className="label">{label}</span>
       <input
-        className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+        className="input"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="numeric"

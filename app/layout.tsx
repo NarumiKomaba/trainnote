@@ -25,10 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-slate-50 text-slate-900 antialiased`}>
-        <div className="min-h-screen">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <div className="app-shell">
           <AppHeader />
-          <main>{children}</main>
+          <main className="app-main">{children}</main>
         </div>
       </body>
     </html>

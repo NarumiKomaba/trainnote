@@ -14,21 +14,18 @@ export default function AppHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-xl flex-col gap-3 px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
+    <header className="app-header">
+      <div className="app-header__content">
+        <div className="app-header__top">
           <div>
-            <div className="text-lg font-semibold">TrainNote</div>
-            <div className="text-xs text-slate-500">スマホでサッと記録、迷わない動線に</div>
+            <div className="app-header__title">TrainNote</div>
+            <div className="app-header__subtitle">スマホでサッと記録、迷わない動線に</div>
           </div>
-          <Link
-            className="rounded-full border border-slate-900 px-3 py-2 text-xs font-semibold text-slate-900"
-            href="/patterns/new"
-          >
+          <Link className="button button--outline" href="/patterns/new">
             ＋ 新規パターン
           </Link>
         </div>
-        <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="メインナビゲーション">
+        <nav className="app-nav" aria-label="メインナビゲーション">
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === "/"
@@ -37,9 +34,7 @@ export default function AppHeader() {
             return (
               <Link
                 key={item.href}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                  isActive ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"
-                }`}
+                className={`app-nav__link${isActive ? " app-nav__link--active" : ""}`}
                 href={item.href}
               >
                 {item.label}

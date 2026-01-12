@@ -108,124 +108,107 @@ export default function PatternNewPage() {
   const typeHint = TYPE_OPTIONS.find((o) => o.value === type)?.hint ?? "";
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-4">
+    <div className="page">
       <PageHeader
         title="パターン作成"
         subtitle="やること（自由記述）と使える機材をセットで登録します。"
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Link
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-              href="/patterns"
-            >
+          <div className="row">
+            <Link className="button button--ghost" href="/patterns">
               戻る
             </Link>
-            <button
-              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-              onClick={save}
-              disabled={saving}
-            >
+            <button className="button button--primary" onClick={save} disabled={saving}>
               {saving ? "保存中..." : "保存"}
             </button>
           </div>
         }
       />
 
-      {msg ? <div className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-slate-700">{msg}</div> : null}
+      {msg ? <div className="notice">{msg}</div> : null}
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="text-sm font-semibold">基本情報</div>
+      <section className="card">
+        <div className="section-title">基本情報</div>
 
-        <div className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500">パターン名</span>
+        <div className="stack">
+          <label className="stack gap-xs">
+            <span className="label">パターン名</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例：ジム脚 / 家トレ体幹 / ストレッチ20分"
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="input"
             />
           </label>
 
-          <div className="flex flex-col gap-2">
-            <span className="text-xs text-slate-500">タイプ</span>
-            <div className="flex flex-wrap gap-2">
+          <div className="stack gap-xs">
+            <span className="label">タイプ</span>
+            <div className="row" style={{ flexWrap: "wrap" }}>
               {TYPE_OPTIONS.map((o) => (
                 <button
                   key={o.value}
                   type="button"
                   onClick={() => setType(o.value)}
-                  className={`flex min-w-[150px] flex-1 flex-col gap-1 rounded-xl border px-4 py-3 text-left ${
-                    type === o.value ? "border-slate-900" : "border-slate-300"
-                  }`}
+                  className={`chip${type === o.value ? " chip--active" : ""}`}
                 >
-                  <div className="text-sm font-semibold">{o.label}</div>
-                  <div className="text-xs text-slate-500">{o.hint}</div>
+                  <div style={{ fontWeight: 700 }}>{o.label}</div>
+                  <div className="page-subtitle" style={{ marginTop: 2 }}>
+                    {o.hint}
+                  </div>
                 </button>
               ))}
             </div>
-            <div className="text-xs text-slate-500">選択中: {typeHint}</div>
+            <div className="page-subtitle">選択中: {typeHint}</div>
           </div>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500">やること（自由記述）</span>
+          <label className="stack gap-xs">
+            <span className="label">やること（自由記述）</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={
                 "例：\n・ウォームアップ 5分\n・脚：レッグプレス / レッグエクステンション\n・余裕があれば有酸素10分\n\n※ここはGeminiが“今日の提案”を作る時の制約・意図として使います"
               }
-              className="min-h-[140px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="textarea"
             />
           </label>
         </div>
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div>
-          <div className="text-sm font-semibold">使える機材（任意）</div>
-          <div className="text-xs text-slate-500">
-            ここで選んだ機材をGeminiの提案に渡します。未選択の場合は「制限なし」として扱います。
-          </div>
+      <section className="card">
+        <div className="section-title">使える機材（任意）</div>
+        <div className="page-subtitle">
+          ここで選んだ機材をGeminiの提案に渡します。未選択の場合は「制限なし」として扱います。
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="row" style={{ flexWrap: "wrap" }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="機材を検索（例：プレス、ロー、ダンベル）"
-            className="min-w-[200px] flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="input"
+            style={{ flex: "1 1 220px" }}
           />
           <button
             type="button"
             onClick={selectAllFiltered}
             disabled={loading || filtered.length === 0}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+            className="button"
           >
             表示中を全選択
           </button>
-          <button
-            type="button"
-            onClick={clearSelection}
-            disabled={Object.keys(selected).length === 0}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-          >
+          <button type="button" onClick={clearSelection} disabled={Object.keys(selected).length === 0} className="button">
             解除
           </button>
-          <div className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
-            選択: {selectedIds.length} 件
-          </div>
+          <div className="badge">選択: {selectedIds.length} 件</div>
         </div>
 
         <div>
           {loading ? (
-            <div className="text-sm text-slate-500">機材を読み込み中...</div>
+            <div className="page-subtitle">機材を読み込み中...</div>
           ) : equipment.length === 0 ? (
-            <div className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              まだ機材が登録されていません。機材未選択でもパターンは作成できます。
-            </div>
+            <div className="notice warning">まだ機材が登録されていません。機材未選択でもパターンは作成できます。</div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
               {filtered.map((e) => {
                 const checked = !!selected[e.id];
                 return (
@@ -233,16 +216,15 @@ export default function PatternNewPage() {
                     key={e.id}
                     type="button"
                     onClick={() => toggle(e.id)}
-                    className={`flex flex-col gap-2 rounded-2xl border bg-white p-3 text-left shadow-sm ${
-                      checked ? "border-slate-900" : "border-slate-200"
-                    }`}
+                    className={`card${checked ? "" : ""}`}
+                    style={{ textAlign: "left", border: checked ? "2px solid #111827" : "1px solid var(--border)" }}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="text-sm font-semibold text-slate-900">{e.name}</div>
-                      <div className="text-xs text-slate-500">{e.unit}</div>
+                    <div className="row space-between">
+                      <div style={{ fontWeight: 700 }}>{e.name}</div>
+                      <div className="page-subtitle">{e.unit}</div>
                     </div>
-                    {e.note ? <div className="text-xs text-slate-500">{e.note}</div> : null}
-                    <div className="text-xs text-slate-500">{checked ? "選択中" : "未選択"}</div>
+                    {e.note ? <div className="page-subtitle">{e.note}</div> : null}
+                    <div className="page-subtitle">{checked ? "選択中" : "未選択"}</div>
                   </button>
                 );
               })}
