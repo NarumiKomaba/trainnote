@@ -58,6 +58,7 @@ export default function AppHomePage() {
 
   const doneCount = items.filter((i) => i.done).length;
   const allCount = items.length;
+  const progressPercent = allCount === 0 ? 0 : Math.round((doneCount / allCount) * 100);
 
   function updateItem(idx: number, patch: Partial<WorkoutResultItem>) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -102,11 +103,6 @@ export default function AppHomePage() {
       <PageHeader
         title="今日のトレーニング"
         meta={<span className="badge">{dateKey}</span>}
-        actions={
-          <button className="button button--ghost" onClick={loadPlan} disabled={loading}>
-            {loading ? "生成中..." : "提案を更新"}
-          </button>
-        }
       />
 
       {message ? <div className="notice">{message}</div> : null}
@@ -119,8 +115,13 @@ export default function AppHomePage() {
                 <div className="section-title">{plan.theme}</div>
                 <div className="page-subtitle">今日のメニュー</div>
               </div>
-              <div className="badge">
-                進捗 {doneCount}/{allCount}
+              <div className="progress" aria-label="進捗">
+                <div className="progress__track">
+                  <div className="progress__fill" style={{ width: `${progressPercent}%` }} />
+                </div>
+                <div className="progress__label">
+                  {doneCount}/{allCount}
+                </div>
               </div>
             </div>
 
@@ -144,7 +145,6 @@ export default function AppHomePage() {
                     <div className="row space-between">
                       <div className="stack gap-xs">
                         <span className="workout-title">{it.name}</span>
-                        <span className="page-subtitle">{it.done ? "完了" : "未完了"}</span>
                       </div>
                       <button
                         type="button"

@@ -147,10 +147,23 @@ export default function SettingsPage() {
 
       <section className="card">
         <div className="section-title">提案の強度</div>
-        <div className="row" style={{ flexWrap: "wrap" }}>
-          <RadioChip label="ゆるめ" checked={preference === "easy"} onClick={() => setPreference("easy")} hint="疲労少なめ / 継続優先" />
-          <RadioChip label="標準" checked={preference === "normal"} onClick={() => setPreference("normal")} hint="基本はこれ" />
-          <RadioChip label="厳しめ" checked={preference === "hard"} onClick={() => setPreference("hard")} hint="伸ばしたい時" />
+        <div className="preference-slider">
+          <input
+            type="range"
+            min={0}
+            max={2}
+            step={1}
+            value={preference === "easy" ? 0 : preference === "normal" ? 1 : 2}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              setPreference(value === 0 ? "easy" : value === 1 ? "normal" : "hard");
+            }}
+          />
+          <div className="preference-slider__labels">
+            <span>ゆるめ</span>
+            <span>標準</span>
+            <span>厳しめ</span>
+          </div>
         </div>
       </section>
 
@@ -174,8 +187,6 @@ export default function SettingsPage() {
             </span>
           </Link>
         </div>
-        <div className="page-subtitle">パターンは「パターン」画面で作成 → ここで割り当てます。</div>
-
         {loading ? (
           <div className="page-subtitle">読み込み中...</div>
         ) : (
@@ -184,7 +195,7 @@ export default function SettingsPage() {
               .slice()
               .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
               .map((r) => (
-                <div key={r.dayOfWeek} className="row space-between" style={{ padding: 12, borderRadius: 12, border: "1px solid var(--border)" }}>
+                <div key={r.dayOfWeek} className="row space-between weekly-rule-row">
                   <div className="badge">{DOW_LABELS[r.dayOfWeek]}</div>
                   <select
                     value={r.patternId ?? ""}
@@ -208,26 +219,5 @@ export default function SettingsPage() {
         ) : null}
       </section>
     </div>
-  );
-}
-
-function RadioChip({
-  label,
-  checked,
-  hint,
-  onClick,
-}: {
-  label: string;
-  checked: boolean;
-  hint: string;
-  onClick: () => void;
-}) {
-  return (
-    <button type="button" onClick={onClick} className={`chip${checked ? " chip--active" : ""}`}>
-      <div style={{ fontWeight: 700 }}>{label}</div>
-      <div className="page-subtitle" style={{ marginTop: 2 }}>
-        {hint}
-      </div>
-    </button>
   );
 }
