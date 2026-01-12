@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import PageHeader from "@/components/PageHeader";
 import type { Equipment, EquipmentUnit } from "@/lib/types";
 
 const FAKE_UID = "demo-user";
@@ -31,9 +32,7 @@ export default function EquipmentPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return list;
-    return list.filter(
-      (e) => e.name.toLowerCase().includes(q) || (e.note ?? "").toLowerCase().includes(q)
-    );
+    return list.filter((e) => e.name.toLowerCase().includes(q) || (e.note ?? "").toLowerCase().includes(q));
   }, [list, search]);
 
   async function load() {
@@ -109,70 +108,34 @@ export default function EquipmentPage() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>機材</h1>
-          <div style={{ opacity: 0.7, fontSize: 13 }}>
-            ジム/家トレを区別せず「使える道具・種目」を登録（Gemini提案の材料になる）
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href="/app/patterns"
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #ddd",
-              background: "white",
-              textDecoration: "none",
-            }}
-          >
-            パターンへ
-          </a>
-          <button
-            onClick={load}
-            disabled={loading}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #ddd",
-              background: "white",
-              cursor: "pointer",
-            }}
-          >
+    <div className="page">
+      <PageHeader
+        title="機材"
+        subtitle="使える道具・種目を登録して提案の材料にします。"
+        actions={
+          <button className="button button--ghost" onClick={load} disabled={loading}>
             更新
           </button>
-        </div>
-      </header>
+        }
+      />
 
-      {msg ? (
-        <div style={{ marginTop: 12, padding: 10, borderRadius: 12, background: "#f5f5f5" }}>{msg}</div>
-      ) : null}
+      {msg ? <div className="notice">{msg}</div> : null}
 
-      {/* Create form */}
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>追加</h2>
-
-        <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 220px", gap: 12 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>機材名</span>
+      <section className="card">
+        <div className="section-title">追加</div>
+        <div className="stack">
+          <label className="stack gap-xs">
+            <span className="label">機材名</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例：レッグプレス、ダンベル、プランク"
-              style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
+              className="input"
             />
           </label>
-
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>単位</span>
-            <select
-              value={unit}
-              onChange={(e) => setUnit(e.target.value as EquipmentUnit)}
-              style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
-            >
+          <label className="stack gap-xs">
+            <span className="label">単位</span>
+            <select value={unit} onChange={(e) => setUnit(e.target.value as EquipmentUnit)} className="select">
               {UNIT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}（{o.hint}）
@@ -180,88 +143,57 @@ export default function EquipmentPage() {
               ))}
             </select>
           </label>
-        </div>
-
-        <label style={{ display: "grid", gap: 6, marginTop: 10 }}>
-          <span style={{ fontSize: 12, opacity: 0.7 }}>メモ（任意）</span>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="例：プレート刻み2.5kg / MAX50kg / マシン番号など"
-            style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
-          />
-        </label>
-
-        <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-          <button
-            onClick={create}
-            disabled={saving}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #111",
-              background: "#111",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            {saving ? "追加中..." : "追加"}
-          </button>
+          <label className="stack gap-xs">
+            <span className="label">メモ（任意）</span>
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="例：プレート刻み2.5kg / MAX50kg / マシン番号など"
+              className="input"
+            />
+          </label>
+          <div className="row" style={{ justifyContent: "flex-end" }}>
+            <button className="button button--primary" onClick={create} disabled={saving}>
+              {saving ? "追加中..." : "追加"}
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* List */}
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 750 }}>一覧</h2>
+      <section className="card">
+        <div className="row space-between">
+          <div className="section-title">一覧</div>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="検索（例：プレス、ロー、ストレッチ）"
-            style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", minWidth: 280 }}
+            className="input"
+            style={{ maxWidth: 240 }}
           />
         </div>
 
-        <div style={{ marginTop: 12 }}>
+        <div>
           {loading ? (
-            <div style={{ opacity: 0.7 }}>読み込み中...</div>
+            <div className="page-subtitle">読み込み中...</div>
           ) : filtered.length === 0 ? (
-            <div style={{ padding: 12, borderRadius: 12, background: "#fff7e6" }}>
+            <div className="notice warning">
               {list.length === 0 ? "まだ機材がありません。上で追加してください。" : "検索条件に一致する機材がありません。"}
             </div>
           ) : (
-            <div style={{ display: "grid", gap: 10 }}>
+            <div className="stack">
               {filtered.map((e) => (
-                <div
-                  key={e.id}
-                  style={{
-                    border: "1px solid #eee",
-                    borderRadius: 14,
-                    padding: 12,
-                    display: "grid",
-                    gap: 8,
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
-                    <div style={{ fontWeight: 850, fontSize: 16 }}>{e.name}</div>
-                    <div style={{ opacity: 0.7, fontSize: 12 }}>
-                      unit: <b>{e.unit}</b> / id: {e.id}
+                <div key={e.id} className="card" style={{ padding: 12 }}>
+                  <div className="row space-between">
+                    <div>
+                      <div className="section-title">{e.name}</div>
+                      <div className="page-subtitle">unit: {e.unit} / id: {e.id}</div>
                     </div>
                   </div>
 
-                  {e.note ? <div style={{ opacity: 0.85, fontSize: 13 }}>{e.note}</div> : null}
+                  {e.note ? <div className="page-subtitle">{e.note}</div> : null}
 
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <button
-                      onClick={() => remove(e.id)}
-                      style={{
-                        padding: "10px 12px",
-                        borderRadius: 12,
-                        border: "1px solid #ddd",
-                        background: "white",
-                        cursor: "pointer",
-                      }}
-                    >
+                  <div className="row" style={{ justifyContent: "flex-end" }}>
+                    <button onClick={() => remove(e.id)} className="button">
                       削除
                     </button>
                   </div>

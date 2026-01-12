@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import PageHeader from "@/components/PageHeader";
 import type { DailyPlan, WorkoutResultItem } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuthのuidに差し替え
@@ -88,61 +89,46 @@ export default function AppHomePage() {
   }
 
   return (
-    <div style={{ maxWidth: 820, margin: "0 auto", padding: 24 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700 }}>TrainNote</h1>
-          <div style={{ opacity: 0.7 }}>{dateKey}</div>
-          <a href="/settings" style={{ textDecoration: "underline" }}>設定</a>
-          <a href="/patterns" style={{ textDecoration: "underline" }}>パターン</a>
-        </div>
-        <button
-          onClick={loadPlan}
-          disabled={loading}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            background: "white",
-            cursor: "pointer",
-          }}
-        >
-          {loading ? "生成中..." : "今日の提案を更新"}
-        </button>
-      </header>
+    <div className="page">
+      <PageHeader
+        title="今日のトレーニング"
+        subtitle="提案内容をチェックして、完了したら保存します。"
+        meta={<span className="badge">{dateKey}</span>}
+        actions={
+          <button className="button button--ghost" onClick={loadPlan} disabled={loading}>
+            {loading ? "生成中..." : "提案を更新"}
+          </button>
+        }
+      />
 
-      <div style={{ marginTop: 18, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
+      {message ? <div className="notice">{message}</div> : null}
+
+      <section className="card">
         {plan ? (
-          <>
-            <div style={{ fontSize: 18, fontWeight: 650 }}>{plan.theme}</div>
-            <div style={{ marginTop: 8, opacity: 0.7 }}>
-              進捗: {doneCount}/{allCount}
+          <div className="stack">
+            <div className="row space-between">
+              <div>
+                <div className="section-title">{plan.theme}</div>
+                <div className="page-subtitle">今日のメニュー</div>
+              </div>
+              <div className="badge">
+                進捗 {doneCount}/{allCount}
+              </div>
             </div>
 
-            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            <div className="stack">
               {items.map((it, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    border: "1px solid #eee",
-                    borderRadius: 12,
-                    padding: 12,
-                    display: "grid",
-                    gap: 8,
-                  }}
-                >
-                  <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div key={idx} className="workout-item">
+                  <label className="row">
                     <input
                       type="checkbox"
                       checked={it.done}
                       onChange={(e) => updateItem(idx, { done: e.target.checked })}
-                      style={{ transform: "scale(1.2)" }}
                     />
-                    <span style={{ fontSize: 16, fontWeight: 650 }}>{it.name}</span>
+                    <span className="workout-title">{it.name}</span>
                   </label>
 
-                  {/* 提案値の表示＆必要時だけ変更 */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  <div className="workout-fields">
                     <Field
                       label="重量(kg)"
                       value={it.weight ?? ""}
@@ -161,45 +147,27 @@ export default function AppHomePage() {
                     <Field
                       label="分"
                       value={it.durationMin ?? ""}
-                      onChange={(v) =>
-                        updateItem(idx, { durationMin: v === "" ? null : Number(v) })
-                      }
+                      onChange={(v) => updateItem(idx, { durationMin: v === "" ? null : Number(v) })}
                     />
                   </div>
 
-                  {it.reason ? (
-                    <div style={{ opacity: 0.75, fontSize: 13 }}>理由: {it.reason}</div>
-                  ) : null}
-                  {it.note ? <div style={{ opacity: 0.75, fontSize: 13 }}>メモ: {it.note}</div> : null}
+                  {it.reason ? <div className="page-subtitle">理由: {it.reason}</div> : null}
+                  {it.note ? <div className="page-subtitle">メモ: {it.note}</div> : null}
                 </div>
               ))}
-              {items.length === 0 ? (
-                <div style={{ opacity: 0.7 }}>今日は休養日か、メニューが空です。</div>
-              ) : null}
+              {items.length === 0 ? <div className="page-subtitle">今日は休養日か、メニューが空です。</div> : null}
             </div>
 
-            <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}>
-              <button
-                onClick={save}
-                disabled={saving || !plan}
-                style={{
-                  padding: "12px 16px",
-                  borderRadius: 12,
-                  border: "1px solid #111",
-                  background: "#111",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
+            <div className="row">
+              <button className="button button--primary" onClick={save} disabled={saving || !plan}>
                 {saving ? "保存中..." : "完了して保存"}
               </button>
-              {message ? <div style={{ opacity: 0.8 }}>{message}</div> : null}
             </div>
-          </>
+          </div>
         ) : (
-          <div style={{ opacity: 0.7 }}>{loading ? "生成中..." : "未読み込み"}</div>
+          <div className="page-subtitle">{loading ? "生成中..." : "未読み込み"}</div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
@@ -214,18 +182,13 @@ function Field({
   onChange: (v: string) => void;
 }) {
   return (
-    <label style={{ display: "grid", gap: 4 }}>
-      <span style={{ fontSize: 12, opacity: 0.7 }}>{label}</span>
+    <label className="stack gap-xs">
+      <span className="label">{label}</span>
       <input
+        className="input"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="numeric"
-        style={{
-          width: 110,
-          padding: "8px 10px",
-          borderRadius: 10,
-          border: "1px solid #ddd",
-        }}
       />
     </label>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import PageHeader from "@/components/PageHeader";
 import type { TrainingPattern, UserSettings, WeeklyRule } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuth uidに差し替え
@@ -105,108 +106,60 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: "0 auto", padding: 24 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>設定</h1>
-          <div style={{ opacity: 0.7, fontSize: 13 }}>曜日ごとのパターン割り当て & 提案の方針</div>
-        </div>
-        <button
-          onClick={saveSettings}
-          disabled={loading || saving}
-          style={{
-            padding: "12px 16px",
-            borderRadius: 12,
-            border: "1px solid #111",
-            background: "#111",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          {saving ? "保存中..." : "保存"}
-        </button>
-      </header>
+    <div className="page">
+      <PageHeader
+        title="設定"
+        subtitle="曜日ごとのパターン割り当てと提案方針を調整します。"
+        actions={
+          <button className="button button--primary" onClick={saveSettings} disabled={loading || saving}>
+            {saving ? "保存中..." : "保存"}
+          </button>
+        }
+      />
 
-      {msg ? (
-        <div style={{ marginTop: 12, padding: 10, borderRadius: 12, background: "#f5f5f5" }}>{msg}</div>
-      ) : null}
+      {msg ? <div className="notice">{msg}</div> : null}
 
-      <section style={{ marginTop: 18, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>提案の強度</h2>
-        <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <RadioChip
-            label="ゆるめ"
-            checked={preference === "easy"}
-            onClick={() => setPreference("easy")}
-            hint="疲労少なめ / 継続優先"
-          />
-          <RadioChip
-            label="標準"
-            checked={preference === "normal"}
-            onClick={() => setPreference("normal")}
-            hint="基本はこれ"
-          />
-          <RadioChip
-            label="厳しめ"
-            checked={preference === "hard"}
-            onClick={() => setPreference("hard")}
-            hint="伸ばしたい時"
-          />
+      <section className="card">
+        <div className="section-title">提案の強度</div>
+        <div className="row" style={{ flexWrap: "wrap" }}>
+          <RadioChip label="ゆるめ" checked={preference === "easy"} onClick={() => setPreference("easy")} hint="疲労少なめ / 継続優先" />
+          <RadioChip label="標準" checked={preference === "normal"} onClick={() => setPreference("normal")} hint="基本はこれ" />
+          <RadioChip label="厳しめ" checked={preference === "hard"} onClick={() => setPreference("hard")} hint="伸ばしたい時" />
         </div>
       </section>
 
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>目標（自由記述）</h2>
-        <div style={{ marginTop: 8, opacity: 0.7, fontSize: 13 }}>
-          例：週3回継続 / 体重-2kg / レッグプレスを伸ばしたい
-        </div>
+      <section className="card">
+        <div className="section-title">目標（自由記述）</div>
+        <div className="page-subtitle">例：週3回継続 / 体重-2kg / レッグプレスを伸ばしたい</div>
         <textarea
           value={goalText}
           onChange={(e) => setGoalText(e.target.value)}
           placeholder="例：週3回継続、脚の筋力UP、ストレッチ習慣"
-          style={{
-            marginTop: 10,
-            width: "100%",
-            minHeight: 90,
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid #ddd",
-            resize: "vertical",
-          }}
+          className="textarea"
         />
       </section>
 
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>曜日ごとのパターン</h2>
-        <div style={{ marginTop: 8, opacity: 0.7, fontSize: 13 }}>
-          パターンは「patterns」画面で作成（名前/自由記述/使える機材）→ここで割り当て。
+      <section className="card">
+        <div className="section-title">曜日ごとのパターン</div>
+        <div className="page-subtitle">
+          パターンは「パターン」画面で作成 → ここで割り当てます。
         </div>
 
         {loading ? (
-          <div style={{ marginTop: 12, opacity: 0.7 }}>読み込み中...</div>
+          <div className="page-subtitle">読み込み中...</div>
         ) : (
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          <div className="stack">
             {weeklyRules
               .slice()
               .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
               .map((r) => (
-                <div
-                  key={r.dayOfWeek}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "64px 1fr",
-                    gap: 10,
-                    alignItems: "center",
-                    padding: 12,
-                    border: "1px solid #eee",
-                    borderRadius: 12,
-                  }}
-                >
-                  <div style={{ fontWeight: 800 }}>{DOW_LABELS[r.dayOfWeek]}</div>
+                <div key={r.dayOfWeek} className="row space-between" style={{ padding: 12, borderRadius: 12, border: "1px solid var(--border)" }}>
+                  <div className="badge">{DOW_LABELS[r.dayOfWeek]}</div>
                   <select
                     value={r.patternId ?? ""}
                     onChange={(e) => updateRule(r.dayOfWeek, e.target.value)}
-                    style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
+                    className="select"
+                    style={{ maxWidth: 260 }}
                   >
                     {patternOptions.map((p) => (
                       <option key={p.id || "rest"} value={p.id}>
@@ -220,9 +173,7 @@ export default function SettingsPage() {
         )}
 
         {patterns.length === 0 && !loading ? (
-          <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: "#fff7e6" }}>
-            パターンがまだありません。先に patterns 画面で作成してください。
-          </div>
+          <div className="notice warning">パターンがまだありません。先にパターン画面で作成してください。</div>
         ) : null}
       </section>
     </div>
@@ -241,21 +192,11 @@ function RadioChip({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        padding: "12px 14px",
-        borderRadius: 14,
-        border: checked ? "2px solid #111" : "1px solid #ddd",
-        background: "white",
-        cursor: "pointer",
-        textAlign: "left",
-        minWidth: 160,
-      }}
-    >
-      <div style={{ fontWeight: 800 }}>{label}</div>
-      <div style={{ opacity: 0.7, fontSize: 12, marginTop: 2 }}>{hint}</div>
+    <button type="button" onClick={onClick} className={`chip${checked ? " chip--active" : ""}`}>
+      <div style={{ fontWeight: 700 }}>{label}</div>
+      <div className="page-subtitle" style={{ marginTop: 2 }}>
+        {hint}
+      </div>
     </button>
   );
 }
