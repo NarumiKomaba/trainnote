@@ -169,7 +169,9 @@ export default function SettingsPage() {
         <div className="row space-between">
           <div className="section-title">曜日ごとのパターン</div>
           <Link className="icon-button" href="/patterns" aria-label="パターンを編集">
-            🛠️
+            <span className="material-symbols-outlined" aria-hidden="true">
+              edit
+            </span>
           </Link>
         </div>
         <div className="page-subtitle">パターンは「パターン」画面で作成 → ここで割り当てます。</div>

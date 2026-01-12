@@ -1,41 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-const NAV_ITEMS = [
-  { href: "/", label: "ホーム" },
-  { href: "/settings", label: "設定" },
-];
 
 export default function AppHeader() {
-  const pathname = usePathname();
-
   return (
     <header className="app-header">
       <div className="app-header__content">
         <div className="app-header__top">
-          <div>
-            <div className="app-header__title">TrainNote</div>
-          </div>
+          <Link className="app-header__title app-header__title-link" href="/">
+            TrainNote
+          </Link>
+          <Link className="icon-button" href="/settings" aria-label="設定">
+            <span className="material-symbols-outlined" aria-hidden="true">
+              settings
+            </span>
+          </Link>
         </div>
-        <nav className="app-nav" aria-label="メインナビゲーション">
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                className={`app-nav__link${isActive ? " app-nav__link--active" : ""}`}
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
       </div>
     </header>
   );

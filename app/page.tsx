@@ -82,7 +82,6 @@ export default function AppHomePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ? JSON.stringify(data.error) : "Failed");
-      setMessage(`保存しました（スタンプ: ${data.stampType}）`);
     } catch (e: any) {
       setMessage(e?.message ?? "Failed to save");
     } finally {
@@ -156,30 +155,36 @@ export default function AppHomePage() {
                           setEditingIndex(isEditing ? null : idx);
                         }}
                       >
-                        {isEditing ? "✖️" : "✏️"}
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          {isEditing ? "close" : "edit"}
+                        </span>
                       </button>
                     </div>
 
-                    <div className="workout-fields">
-                      <Field
-                        label="重量(kg)"
-                        value={it.weight ?? ""}
-                        onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
-                        disabled={!isEditing}
-                      />
-                      <Field
-                        label="回数"
-                        value={it.reps ?? ""}
-                        onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
-                        disabled={!isEditing}
-                      />
-                      <Field
-                        label="セット"
-                        value={it.sets ?? ""}
-                        onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
-                        disabled={!isEditing}
-                      />
-                    </div>
+                    {isEditing ? (
+                      <div className="workout-fields">
+                        <Field
+                          label="重量(kg)"
+                          value={it.weight ?? ""}
+                          onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
+                        />
+                        <Field
+                          label="回数"
+                          value={it.reps ?? ""}
+                          onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
+                        />
+                        <Field
+                          label="セット"
+                          value={it.sets ?? ""}
+                          onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
+                        />
+                      </div>
+                    ) : (
+                      <div className="workout-metrics">
+                        重量: {formatMetric(it.weight, "kg")} / 回数: {formatMetric(it.reps)} / セット:{" "}
+                        {formatMetric(it.sets)}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -198,12 +203,10 @@ function Field({
   label,
   value,
   onChange,
-  disabled = false,
 }: {
   label: string;
   value: number | string;
   onChange: (v: string) => void;
-  disabled?: boolean;
 }) {
   return (
     <label className="stack gap-xs">
@@ -213,8 +216,12 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="numeric"
-        disabled={disabled}
       />
     </label>
   );
+}
+
+function formatMetric(value: number | null | undefined, suffix = "") {
+  if (value === null || value === undefined || value === "") return "-";
+  return `${value}${suffix}`;
 }

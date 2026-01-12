@@ -178,7 +178,9 @@ export default function PatternNewPage() {
         <div className="row space-between">
           <div className="section-title">使える機材（任意）</div>
           <Link className="icon-button" href="/equipment" aria-label="機材を編集">
-            🛠️
+            <span className="material-symbols-outlined" aria-hidden="true">
+              edit
+            </span>
           </Link>
         </div>
         <div className="page-subtitle">
