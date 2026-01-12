@@ -17,6 +17,9 @@ export default function AppHeader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isSettings = pathname?.startsWith("/settings");
+  const isWeeklySettings = pathname === "/settings/weekly";
+  const isDashboard = pathname === "/dashboard";
+  const showBack = isWeeklySettings;
   const today = new Date();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const dateOffsets = [-2, -1, 0, 1, 2];
@@ -128,11 +131,27 @@ export default function AppHeader() {
     );
   }
 
-  if (isSettings) {
+  if (isSettings || isDashboard) {
+    const title = isWeeklySettings ? "曜日ごとのパターン" : isDashboard ? "ダッシュボード" : "設定";
     return (
       <header className="sticky top-0 z-10 bg-orange-400 text-white">
-        <div className="mx-auto flex max-w-[760px] items-center justify-center px-4 py-4">
-          <div className="text-base font-semibold">設定</div>
+        <div className="mx-auto flex max-w-[760px] items-center px-4 py-4">
+          {showBack ? (
+            <button
+              type="button"
+              className="mr-2 inline-flex h-9 w-9 items-center justify-center"
+              aria-label="戻る"
+              onClick={() => router.back()}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">
+                arrow_back
+              </span>
+            </button>
+          ) : (
+            <div className="h-9 w-9" aria-hidden="true" />
+          )}
+          <div className="flex-1 text-center text-base font-semibold">{title}</div>
+          <div className="h-9 w-9" aria-hidden="true" />
         </div>
       </header>
     );
