@@ -143,9 +143,6 @@ export default function PatternEditPage() {
         subtitle="やること（自由記述）と使える機材を更新します。"
         actions={
           <div className="row">
-            <Link className="button button--ghost" href="/patterns">
-              戻る
-            </Link>
             <button className="button button--primary" onClick={save} disabled={saving || loading}>
               {saving ? "保存中..." : "保存"}
             </button>

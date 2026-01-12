@@ -136,7 +136,7 @@ export default function SettingsPage() {
 
       {msg ? <div className="notice">{msg}</div> : null}
 
-      <section className="settings-section">
+      <section className="card">
         <div className="section-title">提案の強度</div>
         <div className="preference-slider">
           <input
@@ -158,7 +158,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="settings-section">
+      <section className="card">
         <div className="section-title">目標（自由記述）</div>
         <div className="page-subtitle">例：週3回継続 / 体重-2kg / レッグプレスを伸ばしたい</div>
         <textarea
@@ -169,7 +169,7 @@ export default function SettingsPage() {
         />
       </section>
 
-      <section className="settings-section">
+      <section className="card">
         <div className="row space-between">
           <div className="section-title">曜日ごとのパターン</div>
           <Link className="icon-button" href="/patterns" aria-label="パターンを編集">
@@ -210,7 +210,7 @@ export default function SettingsPage() {
         ) : null}
       </section>
 
-      <section className="settings-section settings-section--subtle">
+      <section className="card">
         <div className="section-title">パターン・機材の管理</div>
         <div className="page-subtitle">作成・編集は各画面から行います。</div>
         <div className="settings-links settings-links--compact">
