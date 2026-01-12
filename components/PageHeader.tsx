@@ -5,11 +5,12 @@ type PageHeaderProps = {
   subtitle?: string;
   meta?: ReactNode;
   actions?: ReactNode;
+  centered?: boolean;
 };
 
-export default function PageHeader({ title, subtitle, meta, actions }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, meta, actions, centered }: PageHeaderProps) {
   return (
-    <div className="page-header">
+    <div className={`page-header${centered ? " page-header--centered" : ""}`}>
       <div className="stack gap-xs">
         <div className="page-title">{title}</div>
         {subtitle ? <div className="page-subtitle">{subtitle}</div> : null}

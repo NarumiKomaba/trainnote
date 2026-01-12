@@ -44,6 +44,12 @@ a {
   z-index: 10;
 }
 
+.app-header--home {
+  background: #6caf3f;
+  border-bottom: none;
+  color: #ffffff;
+}
+
 .app-header__content {
   max-width: 760px;
   margin: 0 auto;
@@ -51,6 +57,11 @@ a {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.app-header__content--home {
+  padding: 16px 16px 20px;
+  gap: 16px;
 }
 
 .app-header__top {
@@ -71,6 +82,13 @@ a {
   font-weight: 700;
 }
 
+.app-header__title--home {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  flex: 1;
+}
+
 .app-header__title-link {
   text-decoration: none;
 }
@@ -78,6 +96,44 @@ a {
 .app-header__subtitle {
   font-size: 12px;
   color: var(--muted);
+}
+
+.app-header__icon {
+  color: inherit;
+}
+
+.home-date-strip {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.home-date-chip {
+  min-width: 48px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.home-date-chip--today {
+  background: #ffffff;
+  color: #6caf3f;
+  border-color: #ffffff;
+}
+
+.home-date-chip__number {
+  font-size: 15px;
+}
+
+.home-date-chip__label {
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .app-nav {
@@ -108,6 +164,39 @@ a {
 
 .app-main {
   flex: 1;
+  padding-bottom: 72px;
+}
+
+.app-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  z-index: 10;
+}
+
+.app-footer__nav {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.app-footer__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.app-footer__link .material-symbols-outlined {
+  font-size: 22px;
 }
 
 .page {
@@ -119,10 +208,20 @@ a {
   gap: 16px;
 }
 
+.page--home {
+  padding-top: 8px;
+  padding-bottom: 24px;
+}
+
 .page-header {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.page-header--centered {
+  align-items: center;
+  text-align: center;
 }
 
 .page-title {
@@ -426,6 +525,22 @@ a {
   text-align: right;
 }
 
+.home-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-summary__value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.home-summary__meter .progress__track {
+  height: 10px;
+  background: #e5e7eb;
+}
+
 .pattern-card {
   text-decoration: none;
 }
@@ -471,5 +586,10 @@ a {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .page-header--centered {
+    flex-direction: column;
+    justify-content: center;
   }
 }

@@ -99,13 +99,27 @@ export default function AppHomePage() {
   }
 
   return (
-    <div className="page">
-      <PageHeader
-        title="今日のトレーニング"
-        meta={<span className="badge">{dateKey}</span>}
-      />
+    <div className="page page--home">
+      <PageHeader title="ホーム" centered />
 
       {message ? <div className="notice">{message}</div> : null}
+
+      <section className="card">
+        <div className="home-summary">
+          <div>
+            <div className="section-title">達成率</div>
+            <div className="home-summary__value">{progressPercent}%</div>
+            <div className="page-subtitle">
+              完了 {doneCount}/{allCount}
+            </div>
+          </div>
+          <div className="home-summary__meter" aria-label="進捗">
+            <div className="progress__track">
+              <div className="progress__fill" style={{ width: `${progressPercent}%` }} />
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section>
         {plan ? (
