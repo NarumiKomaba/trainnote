@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import type { Equipment, TrainingPattern } from "@/lib/types";
 
@@ -14,8 +15,11 @@ const TYPE_OPTIONS: { value: TrainingPattern["type"]; label: string; hint: strin
   { value: "custom", label: "カスタム", hint: "自由に使う" },
 ];
 
-export default function PatternNewPage() {
+export default function PatternEditPage() {
   const uid = FAKE_UID;
+  const router = useRouter();
+  const params = useParams();
+  const patternId = typeof params.id === "string" ? params.id : params.id?.[0];
 
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,25 +41,49 @@ export default function PatternNewPage() {
   }, [equipment, search]);
 
   useEffect(() => {
+    if (!patternId) return;
     (async () => {
       setLoading(true);
       setMsg("");
       try {
-        const res = await fetch("/api/equipment/list", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uid }),
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error ?? "Failed to load equipment");
-        setEquipment(json.equipment ?? []);
+        const [equipmentRes, patternRes] = await Promise.all([
+          fetch("/api/equipment/list", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ uid }),
+          }),
+          fetch("/api/patterns/list", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ uid }),
+          }),
+        ]);
+
+        const equipmentJson = await equipmentRes.json();
+        const patternJson = await patternRes.json();
+
+        if (!equipmentRes.ok) throw new Error(equipmentJson?.error ?? "Failed to load equipment");
+        if (!patternRes.ok) throw new Error(patternJson?.error ?? "Failed to load patterns");
+
+        setEquipment(equipmentJson.equipment ?? []);
+        const found = (patternJson.patterns ?? []).find((p: TrainingPattern) => p.id === patternId);
+        if (!found) throw new Error("パターンが見つかりませんでした");
+
+        setName(found.name);
+        setType(found.type);
+        setDescription(found.description ?? "");
+        const nextSelected: Record<string, boolean> = {};
+        for (const id of found.allowedEquipmentIds ?? []) {
+          nextSelected[id] = true;
+        }
+        setSelected(nextSelected);
       } catch (e: any) {
         setMsg(e?.message ?? "Failed to load");
       } finally {
         setLoading(false);
       }
     })();
-  }, [uid]);
+  }, [patternId, uid]);
 
   function toggle(id: string) {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -74,6 +102,7 @@ export default function PatternNewPage() {
   }
 
   async function save() {
+    if (!patternId) return;
     setSaving(true);
     setMsg("");
     try {
@@ -81,11 +110,12 @@ export default function PatternNewPage() {
         throw new Error("パターン名を入力してください");
       }
 
-      const res = await fetch("/api/patterns/create", {
+      const res = await fetch("/api/patterns/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           uid,
+          id: patternId,
           name: name.trim(),
           type,
           description,
@@ -94,10 +124,9 @@ export default function PatternNewPage() {
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ? JSON.stringify(json.error) : "Failed to create");
+      if (!res.ok) throw new Error(json?.error ? JSON.stringify(json.error) : "Failed to update");
 
-      // 作成後は一覧へ
-      window.location.href = "/patterns";
+      router.push("/patterns");
     } catch (e: any) {
       setMsg(e?.message ?? "Failed to save");
     } finally {
@@ -110,14 +139,11 @@ export default function PatternNewPage() {
   return (
     <div className="page">
       <PageHeader
-        title="パターン作成"
-        subtitle="やること（自由記述）と使える機材をセットで登録します。"
+        title="パターン編集"
+        subtitle="やること（自由記述）と使える機材を更新します。"
         actions={
           <div className="row">
-            <Link className="button button--ghost" href="/patterns">
-              戻る
-            </Link>
-            <button className="button button--primary" onClick={save} disabled={saving}>
+            <button className="button button--primary" onClick={save} disabled={saving || loading}>
               {saving ? "保存中..." : "保存"}
             </button>
           </div>

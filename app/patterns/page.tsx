@@ -55,9 +55,6 @@ export default function PatternsPage() {
             <Link className="button button--primary" href="/patterns/new">
               ＋ 新規作成
             </Link>
-            <button className="button button--ghost" onClick={load}>
-              更新
-            </button>
           </div>
         }
       />
@@ -71,7 +68,7 @@ export default function PatternsPage() {
           <div className="notice warning">まだパターンがありません。「新規作成」から作ってください。</div>
         ) : (
           patterns.map((p) => (
-            <div key={p.id} className="card">
+            <Link key={p.id} href={`/patterns/${p.id}`} className="card pattern-card">
               <div className="row space-between">
                 <div>
                   <div className="section-title">{p.name}</div>
@@ -89,7 +86,7 @@ export default function PatternsPage() {
               <div className="page-subtitle">
                 使える機材: {p.allowedEquipmentIds?.length ? `${p.allowedEquipmentIds.length} 件` : "制限なし/未設定"}
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>

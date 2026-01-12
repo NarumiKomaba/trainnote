@@ -23,6 +23,7 @@ export default function AppHomePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   async function loadPlan() {
     setLoading(true);
@@ -42,6 +43,7 @@ export default function AppHomePage() {
         done: false,
       }));
       setItems(init);
+      setEditingIndex(null);
     } catch (e: any) {
       setMessage(e?.message ?? "Failed to load plan");
     } finally {
@@ -56,17 +58,18 @@ export default function AppHomePage() {
 
   const doneCount = items.filter((i) => i.done).length;
   const allCount = items.length;
+  const progressPercent = allCount === 0 ? 0 : Math.round((doneCount / allCount) * 100);
 
   function updateItem(idx: number, patch: Partial<WorkoutResultItem>) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
 
-  async function save() {
+  async function save(nextItems: WorkoutResultItem[]) {
     if (!plan) return;
     setSaving(true);
     setMessage("");
     try {
-      const completed = doneCount > 0; // 完了判定は好みで調整（全doneでtrueでもOK）
+      const completed = nextItems.some((item) => item.done); // 完了判定は好みで調整（全doneでtrueでもOK）
       const res = await fetch("/api/save-workout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,13 +77,12 @@ export default function AppHomePage() {
           uid,
           dateKey,
           patternId: plan.patternId,
-          items,
+          items: nextItems,
           completed,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ? JSON.stringify(data.error) : "Failed");
-      setMessage(`保存しました（スタンプ: ${data.stampType}）`);
     } catch (e: any) {
       setMessage(e?.message ?? "Failed to save");
     } finally {
@@ -88,17 +90,19 @@ export default function AppHomePage() {
     }
   }
 
+  function toggleDone(idx: number) {
+    setItems((prev) => {
+      const nextItems = prev.map((it, i) => (i === idx ? { ...it, done: !it.done } : it));
+      void save(nextItems);
+      return nextItems;
+    });
+  }
+
   return (
     <div className="page">
       <PageHeader
         title="今日のトレーニング"
-        subtitle="提案内容をチェックして、完了したら保存します。"
         meta={<span className="badge">{dateKey}</span>}
-        actions={
-          <button className="button button--ghost" onClick={loadPlan} disabled={loading}>
-            {loading ? "生成中..." : "提案を更新"}
-          </button>
-        }
       />
 
       {message ? <div className="notice">{message}</div> : null}
@@ -111,57 +115,80 @@ export default function AppHomePage() {
                 <div className="section-title">{plan.theme}</div>
                 <div className="page-subtitle">今日のメニュー</div>
               </div>
-              <div className="badge">
-                進捗 {doneCount}/{allCount}
+              <div className="progress" aria-label="進捗">
+                <div className="progress__track">
+                  <div className="progress__fill" style={{ width: `${progressPercent}%` }} />
+                </div>
+                <div className="progress__label">
+                  {doneCount}/{allCount}
+                </div>
               </div>
             </div>
 
             <div className="stack">
-              {items.map((it, idx) => (
-                <div key={idx} className="workout-item">
-                  <label className="row">
-                    <input
-                      type="checkbox"
-                      checked={it.done}
-                      onChange={(e) => updateItem(idx, { done: e.target.checked })}
-                    />
-                    <span className="workout-title">{it.name}</span>
-                  </label>
+              {items.map((it, idx) => {
+                const isEditing = editingIndex === idx;
+                return (
+                  <div
+                    key={idx}
+                    className={`workout-item${it.done ? " workout-item--done" : ""}`}
+                    onClick={() => toggleDone(idx)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleDone(idx);
+                      }
+                    }}
+                  >
+                    <div className="row space-between">
+                      <div className="stack gap-xs">
+                        <span className="workout-title">{it.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="icon-button"
+                        aria-label={isEditing ? "編集を閉じる" : "編集する"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingIndex(isEditing ? null : idx);
+                        }}
+                      >
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          {isEditing ? "close" : "edit"}
+                        </span>
+                      </button>
+                    </div>
 
-                  <div className="workout-fields">
-                    <Field
-                      label="重量(kg)"
-                      value={it.weight ?? ""}
-                      onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
-                    />
-                    <Field
-                      label="回数"
-                      value={it.reps ?? ""}
-                      onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
-                    />
-                    <Field
-                      label="セット"
-                      value={it.sets ?? ""}
-                      onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
-                    />
-                    <Field
-                      label="分"
-                      value={it.durationMin ?? ""}
-                      onChange={(v) => updateItem(idx, { durationMin: v === "" ? null : Number(v) })}
-                    />
+                    {isEditing ? (
+                      <div className="workout-fields">
+                        <Field
+                          label="重量(kg)"
+                          value={it.weight ?? ""}
+                          onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
+                        />
+                        <Field
+                          label="回数"
+                          value={it.reps ?? ""}
+                          onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
+                        />
+                        <Field
+                          label="セット"
+                          value={it.sets ?? ""}
+                          onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
+                        />
+                      </div>
+                    ) : (
+                      <div className="workout-metrics">
+                        重量: {formatMetric(it.weight, "kg")} / 回数: {formatMetric(it.reps)} / セット:{" "}
+                        {formatMetric(it.sets)}
+                      </div>
+                    )}
                   </div>
-
-                  {it.reason ? <div className="page-subtitle">理由: {it.reason}</div> : null}
-                  {it.note ? <div className="page-subtitle">メモ: {it.note}</div> : null}
-                </div>
-              ))}
+                );
+              })}
               {items.length === 0 ? <div className="page-subtitle">今日は休養日か、メニューが空です。</div> : null}
-            </div>
-
-            <div className="row">
-              <button className="button button--primary" onClick={save} disabled={saving || !plan}>
-                {saving ? "保存中..." : "完了して保存"}
-              </button>
             </div>
           </div>
         ) : (
@@ -192,4 +219,9 @@ function Field({
       />
     </label>
   );
+}
+
+function formatMetric(value: number | null | undefined, suffix = "") {
+  if (value === null || value === undefined || value === "") return "-";
+  return `${value}${suffix}`;
 }
