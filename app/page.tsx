@@ -63,16 +63,12 @@ export default function AppHomePage() {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
 
-  function toggleDone(idx: number) {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, done: !it.done } : it)));
-  }
-
-  async function save() {
+  async function save(nextItems: WorkoutResultItem[]) {
     if (!plan) return;
     setSaving(true);
     setMessage("");
     try {
-      const completed = doneCount > 0; // 完了判定は好みで調整（全doneでtrueでもOK）
+      const completed = nextItems.some((item) => item.done); // 完了判定は好みで調整（全doneでtrueでもOK）
       const res = await fetch("/api/save-workout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,7 +76,7 @@ export default function AppHomePage() {
           uid,
           dateKey,
           patternId: plan.patternId,
-          items,
+          items: nextItems,
           completed,
         }),
       });
@@ -92,6 +88,14 @@ export default function AppHomePage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function toggleDone(idx: number) {
+    setItems((prev) => {
+      const nextItems = prev.map((it, i) => (i === idx ? { ...it, done: !it.done } : it));
+      void save(nextItems);
+      return nextItems;
+    });
   }
 
   return (
@@ -145,53 +149,41 @@ export default function AppHomePage() {
                       </div>
                       <button
                         type="button"
-                        className="button button--ghost"
+                        className="icon-button"
+                        aria-label={isEditing ? "編集を閉じる" : "編集する"}
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingIndex(isEditing ? null : idx);
                         }}
                       >
-                        {isEditing ? "閉じる" : "編集"}
+                        {isEditing ? "✖️" : "✏️"}
                       </button>
                     </div>
 
-                    {isEditing ? (
-                      <div className="workout-fields">
-                        <Field
-                          label="重量(kg)"
-                          value={it.weight ?? ""}
-                          onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
-                        />
-                        <Field
-                          label="回数"
-                          value={it.reps ?? ""}
-                          onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
-                        />
-                        <Field
-                          label="セット"
-                          value={it.sets ?? ""}
-                          onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
-                        />
-                        <Field
-                          label="分"
-                          value={it.durationMin ?? ""}
-                          onChange={(v) => updateItem(idx, { durationMin: v === "" ? null : Number(v) })}
-                        />
-                      </div>
-                    ) : null}
-
-                    {it.reason ? <div className="page-subtitle">理由: {it.reason}</div> : null}
-                    {it.note ? <div className="page-subtitle">メモ: {it.note}</div> : null}
+                    <div className="workout-fields">
+                      <Field
+                        label="重量(kg)"
+                        value={it.weight ?? ""}
+                        onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
+                        disabled={!isEditing}
+                      />
+                      <Field
+                        label="回数"
+                        value={it.reps ?? ""}
+                        onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
+                        disabled={!isEditing}
+                      />
+                      <Field
+                        label="セット"
+                        value={it.sets ?? ""}
+                        onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                 );
               })}
               {items.length === 0 ? <div className="page-subtitle">今日は休養日か、メニューが空です。</div> : null}
-            </div>
-
-            <div className="row">
-              <button className="button button--primary" onClick={save} disabled={saving || !plan}>
-                {saving ? "保存中..." : "完了して保存"}
-              </button>
             </div>
           </div>
         ) : (
@@ -206,10 +198,12 @@ function Field({
   label,
   value,
   onChange,
+  disabled = false,
 }: {
   label: string;
   value: number | string;
   onChange: (v: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className="stack gap-xs">
@@ -219,6 +213,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="numeric"
+        disabled={disabled}
       />
     </label>
   );

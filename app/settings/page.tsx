@@ -166,10 +166,13 @@ export default function SettingsPage() {
       </section>
 
       <section className="card">
-        <div className="section-title">曜日ごとのパターン</div>
-        <div className="page-subtitle">
-          パターンは「パターン」画面で作成 → ここで割り当てます。
+        <div className="row space-between">
+          <div className="section-title">曜日ごとのパターン</div>
+          <Link className="icon-button" href="/patterns" aria-label="パターンを編集">
+            🛠️
+          </Link>
         </div>
+        <div className="page-subtitle">パターンは「パターン」画面で作成 → ここで割り当てます。</div>
 
         {loading ? (
           <div className="page-subtitle">読み込み中...</div>

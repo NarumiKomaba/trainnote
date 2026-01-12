@@ -175,7 +175,12 @@ export default function PatternNewPage() {
       </section>
 
       <section className="card">
-        <div className="section-title">使える機材（任意）</div>
+        <div className="row space-between">
+          <div className="section-title">使える機材（任意）</div>
+          <Link className="icon-button" href="/equipment" aria-label="機材を編集">
+            🛠️
+          </Link>
+        </div>
         <div className="page-subtitle">
           ここで選んだ機材をGeminiの提案に渡します。未選択の場合は「制限なし」として扱います。
         </div>
