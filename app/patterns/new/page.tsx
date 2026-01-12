@@ -112,6 +112,7 @@ export default function PatternNewPage() {
       <PageHeader
         title="パターン作成"
         subtitle="やること（自由記述）と使える機材をセットで登録します。"
+        showBack
         actions={
           <div className="row">
             <Link className="button button--ghost" href="/patterns">

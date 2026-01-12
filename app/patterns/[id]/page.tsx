@@ -141,6 +141,7 @@ export default function PatternEditPage() {
       <PageHeader
         title="パターン編集"
         subtitle="やること（自由記述）と使える機材を更新します。"
+        showBack
         actions={
           <div className="row">
             <button className="button button--primary" onClick={save} disabled={saving || loading}>

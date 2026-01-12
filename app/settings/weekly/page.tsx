@@ -127,8 +127,6 @@ export default function WeeklyPatternPage() {
   return (
     <div className="page">
       <PageHeader title="曜日ごとのパターン" showBack />
-      {msg ? <div className="notice">{msg}</div> : null}
-
       <section className="card">
         <div className="section-title">曜日ごとのパターン</div>
         {loading ? (

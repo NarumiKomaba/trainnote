@@ -50,6 +50,7 @@ export default function PatternsPage() {
       <PageHeader
         title="パターン"
         subtitle="今日やること＋使える機材をまとめて管理します。"
+        showBack
         actions={
           <div className="row">
             <Link className="button button--primary" href="/patterns/new">

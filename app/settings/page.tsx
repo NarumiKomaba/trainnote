@@ -91,8 +91,6 @@ export default function SettingsPage() {
   return (
     <div className="page">
       <PageHeader title="設定" />
-      {msg ? <div className="notice">{msg}</div> : null}
-
       <section className="card">
         <div className="section-title">提案の強度</div>
         <div className="preference-slider">
