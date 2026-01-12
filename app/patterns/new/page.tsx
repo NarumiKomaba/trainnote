@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
 import type { Equipment, TrainingPattern } from "@/lib/types";
 
 const FAKE_UID = "demo-user";
@@ -106,126 +108,99 @@ export default function PatternNewPage() {
   const typeHint = TYPE_OPTIONS.find((o) => o.value === type)?.hint ?? "";
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>パターン作成</h1>
-          <div style={{ opacity: 0.7, fontSize: 13 }}>やること（自由記述）と、使える機材をセットで登録</div>
-        </div>
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-4">
+      <PageHeader
+        title="パターン作成"
+        subtitle="やること（自由記述）と使える機材をセットで登録します。"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+              href="/patterns"
+            >
+              戻る
+            </Link>
+            <button
+              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+              onClick={save}
+              disabled={saving}
+            >
+              {saving ? "保存中..." : "保存"}
+            </button>
+          </div>
+        }
+      />
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href="/patterns"
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #ddd",
-              background: "white",
-              textDecoration: "none",
-            }}
-          >
-            戻る
-          </a>
-          <button
-            onClick={save}
-            disabled={saving}
-            style={{
-              padding: "12px 16px",
-              borderRadius: 12,
-              border: "1px solid #111",
-              background: "#111",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            {saving ? "保存中..." : "保存"}
-          </button>
-        </div>
-      </header>
+      {msg ? <div className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-slate-700">{msg}</div> : null}
 
-      {msg ? (
-        <div style={{ marginTop: 12, padding: 10, borderRadius: 12, background: "#f5f5f5" }}>{msg}</div>
-      ) : null}
+      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="text-sm font-semibold">基本情報</div>
 
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>基本情報</h2>
-
-        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>パターン名</span>
+        <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-slate-500">パターン名</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例：ジム脚 / 家トレ体幹 / ストレッチ20分"
-              style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
 
-          <div style={{ display: "grid", gap: 8 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>タイプ</span>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-slate-500">タイプ</span>
+            <div className="flex flex-wrap gap-2">
               {TYPE_OPTIONS.map((o) => (
                 <button
                   key={o.value}
                   type="button"
                   onClick={() => setType(o.value)}
-                  style={{
-                    padding: "12px 14px",
-                    borderRadius: 14,
-                    border: type === o.value ? "2px solid #111" : "1px solid #ddd",
-                    background: "white",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    minWidth: 160,
-                  }}
+                  className={`flex min-w-[150px] flex-1 flex-col gap-1 rounded-xl border px-4 py-3 text-left ${
+                    type === o.value ? "border-slate-900" : "border-slate-300"
+                  }`}
                 >
-                  <div style={{ fontWeight: 800 }}>{o.label}</div>
-                  <div style={{ opacity: 0.7, fontSize: 12, marginTop: 2 }}>{o.hint}</div>
+                  <div className="text-sm font-semibold">{o.label}</div>
+                  <div className="text-xs text-slate-500">{o.hint}</div>
                 </button>
               ))}
             </div>
-            <div style={{ opacity: 0.7, fontSize: 12 }}>選択中: {typeHint}</div>
+            <div className="text-xs text-slate-500">選択中: {typeHint}</div>
           </div>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, opacity: 0.7 }}>やること（自由記述）</span>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-slate-500">やること（自由記述）</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={
                 "例：\n・ウォームアップ 5分\n・脚：レッグプレス / レッグエクステンション\n・余裕があれば有酸素10分\n\n※ここはGeminiが“今日の提案”を作る時の制約・意図として使います"
               }
-              style={{
-                width: "100%",
-                minHeight: 140,
-                padding: 12,
-                borderRadius: 12,
-                border: "1px solid #ddd",
-                resize: "vertical",
-              }}
+              className="min-h-[140px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
         </div>
       </section>
 
-      <section style={{ marginTop: 14, padding: 16, border: "1px solid #eee", borderRadius: 14 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 750 }}>使える機材（任意）</h2>
-        <div style={{ marginTop: 8, opacity: 0.7, fontSize: 13 }}>
-          ここで選んだ機材をGeminiの提案に渡します。未選択の場合は「制限なし」として扱います。
+      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div>
+          <div className="text-sm font-semibold">使える機材（任意）</div>
+          <div className="text-xs text-slate-500">
+            ここで選んだ機材をGeminiの提案に渡します。未選択の場合は「制限なし」として扱います。
+          </div>
         </div>
 
-        <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="flex flex-wrap items-center gap-2">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="機材を検索（例：プレス、ロー、ダンベル）"
-            style={{ flex: "1 1 260px", padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd" }}
+            className="min-w-[200px] flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
           />
           <button
             type="button"
             onClick={selectAllFiltered}
             disabled={loading || filtered.length === 0}
-            style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", background: "white" }}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
           >
             表示中を全選択
           </button>
@@ -233,29 +208,24 @@ export default function PatternNewPage() {
             type="button"
             onClick={clearSelection}
             disabled={Object.keys(selected).length === 0}
-            style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", background: "white" }}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
           >
             解除
           </button>
-          <div style={{ opacity: 0.8, fontSize: 13 }}>選択: {selectedIds.length} 件</div>
+          <div className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+            選択: {selectedIds.length} 件
+          </div>
         </div>
 
-        <div style={{ marginTop: 12 }}>
+        <div>
           {loading ? (
-            <div style={{ opacity: 0.7 }}>機材を読み込み中...</div>
+            <div className="text-sm text-slate-500">機材を読み込み中...</div>
           ) : equipment.length === 0 ? (
-            <div style={{ padding: 12, borderRadius: 12, background: "#fff7e6" }}>
-              まだ機材が登録されていません。機材未選択でもパターンは作成できます（制限なし扱い）。
+            <div className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              まだ機材が登録されていません。機材未選択でもパターンは作成できます。
             </div>
           ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 10,
-                marginTop: 10,
-              }}
-            >
+            <div className="grid gap-3 sm:grid-cols-2">
               {filtered.map((e) => {
                 const checked = !!selected[e.id];
                 return (
@@ -263,27 +233,16 @@ export default function PatternNewPage() {
                     key={e.id}
                     type="button"
                     onClick={() => toggle(e.id)}
-                    style={{
-                      borderRadius: 14,
-                      border: checked ? "2px solid #111" : "1px solid #eee",
-                      background: "white",
-                      padding: 12,
-                      textAlign: "left",
-                      cursor: "pointer",
-                    }}
+                    className={`flex flex-col gap-2 rounded-2xl border bg-white p-3 text-left shadow-sm ${
+                      checked ? "border-slate-900" : "border-slate-200"
+                    }`}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ fontWeight: 850 }}>{e.name}</div>
-                      <div style={{ opacity: 0.7, fontSize: 12 }}>{e.unit}</div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-sm font-semibold text-slate-900">{e.name}</div>
+                      <div className="text-xs text-slate-500">{e.unit}</div>
                     </div>
-                    {e.note ? (
-                      <div style={{ marginTop: 6, opacity: 0.7, fontSize: 12, lineHeight: 1.4 }}>
-                        {e.note}
-                      </div>
-                    ) : null}
-                    <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
-                      {checked ? "選択中" : "未選択"}
-                    </div>
+                    {e.note ? <div className="text-xs text-slate-500">{e.note}</div> : null}
+                    <div className="text-xs text-slate-500">{checked ? "選択中" : "未選択"}</div>
                   </button>
                 );
               })}
