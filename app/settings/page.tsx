@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
 import type { UserSettings } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuth uidに差し替え
@@ -89,6 +90,7 @@ export default function SettingsPage() {
 
   return (
     <div className="page">
+      <PageHeader title="設定" />
       {msg ? <div className="notice">{msg}</div> : null}
 
       <section className="card">

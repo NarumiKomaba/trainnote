@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import PageHeader from "@/components/PageHeader";
 import type { TrainingPattern, UserSettings, WeeklyRule } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuth uidに差し替え
@@ -125,6 +126,7 @@ export default function WeeklyPatternPage() {
 
   return (
     <div className="page">
+      <PageHeader title="曜日ごとのパターン" showBack />
       {msg ? <div className="notice">{msg}</div> : null}
 
       <section className="card">

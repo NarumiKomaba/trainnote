@@ -1,5 +1,7 @@
 "use client";
 
+import PageHeader from "@/components/PageHeader";
+
 const SUMMARY_CARDS = [
   { label: "週間達成率", value: "78%" },
   { label: "連続記録日数", value: "5日" },
@@ -11,6 +13,7 @@ const WEEKLY_BARS = [40, 60, 75, 30, 50, 90, 65];
 export default function DashboardPage() {
   return (
     <div className="page">
+      <PageHeader title="ダッシュボード" />
       <section className="flex flex-col gap-3">
         <div className="text-sm font-semibold text-slate-500">集計</div>
         <div className="grid gap-3 sm:grid-cols-3">

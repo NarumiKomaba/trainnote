@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 
 function formatMonthTitle(date: Date) {
@@ -13,13 +13,8 @@ function formatDayLabel(date: Date) {
 }
 
 export default function AppHeader() {
-  const router = useRouter();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const isSettings = pathname?.startsWith("/settings");
-  const isWeeklySettings = pathname === "/settings/weekly";
-  const isDashboard = pathname === "/dashboard";
-  const showBack = isWeeklySettings;
   const today = new Date();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const dateOffsets = [-2, -1, 0, 1, 2];
@@ -131,58 +126,5 @@ export default function AppHeader() {
     );
   }
 
-  if (isSettings || isDashboard) {
-    const title = isWeeklySettings ? "曜日ごとのパターン" : isDashboard ? "ダッシュボード" : "設定";
-    return (
-      <header className="sticky top-0 z-10 bg-orange-400 text-white">
-        <div className="mx-auto flex max-w-[760px] items-center px-4 py-4">
-          {showBack ? (
-            <button
-              type="button"
-              className="mr-2 inline-flex h-9 w-9 items-center justify-center"
-              aria-label="戻る"
-              onClick={() => router.back()}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">
-                arrow_back
-              </span>
-            </button>
-          ) : (
-            <div className="h-9 w-9" aria-hidden="true" />
-          )}
-          <div className="flex-1 text-center text-base font-semibold">{title}</div>
-          <div className="h-9 w-9" aria-hidden="true" />
-        </div>
-      </header>
-    );
-  }
-
-  return (
-    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-[760px] flex-col gap-3 px-4 pb-3 pt-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center"
-              aria-label="戻る"
-              onClick={() => router.back()}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">
-                arrow_back
-              </span>
-            </button>
-            <Link className="text-lg font-semibold" href="/">
-              TrainNote
-            </Link>
-          </div>
-          <Link className="inline-flex h-9 w-9 items-center justify-center" href="/settings" aria-label="設定">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              settings
-            </span>
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
+  return null;
 }
