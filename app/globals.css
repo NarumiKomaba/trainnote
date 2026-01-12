@@ -324,6 +324,10 @@ a {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.workout-item-row {
+  gap: 0;
+}
+
 .workout-item:hover {
   border-color: #cdd4df;
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);

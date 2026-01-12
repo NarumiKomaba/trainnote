@@ -134,7 +134,7 @@ export default function AppHomePage() {
                       }
                     }}
                   >
-                    <div className="row space-between">
+                    <div className="row space-between workout-item-row">
                       <div className="stack gap-xs">
                         <span className="workout-title">{it.name}</span>
                       </div>

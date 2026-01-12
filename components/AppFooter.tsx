@@ -18,7 +18,7 @@ export default function AppFooter() {
       <nav className="mx-auto grid max-w-[760px] grid-cols-3 gap-2 px-4 py-2" aria-label="フッターナビ">
         <Link className={`${linkBase} ${isDashboard ? activeClass : inactiveClass}`} href="/dashboard">
           <span className="material-symbols-outlined" aria-hidden="true">
-            home
+            dashboard
           </span>
           <span>ダッシュボード</span>
         </Link>
