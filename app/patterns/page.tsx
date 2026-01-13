@@ -75,7 +75,6 @@ export default function PatternsPage() {
                   <div className="section-title">{p.name}</div>
                   <div className="page-subtitle">{typeLabel(p.type)}</div>
                 </div>
-                <div className="page-subtitle">ID: {p.id}</div>
               </div>
 
               {p.description ? (

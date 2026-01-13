@@ -184,7 +184,7 @@ export default function PatternEditPage() {
                 </button>
               ))}
             </div>
-            <div className="page-subtitle">選択中: {typeHint}</div>
+            <div className="page-subtitle">{typeHint}</div>
           </div>
 
           <label className="stack gap-xs">
@@ -233,7 +233,6 @@ export default function PatternEditPage() {
           <button type="button" onClick={clearSelection} disabled={Object.keys(selected).length === 0} className="button">
             解除
           </button>
-          <div className="badge">選択: {selectedIds.length} 件</div>
         </div>
 
         <div>
@@ -258,7 +257,6 @@ export default function PatternEditPage() {
                       <div className="page-subtitle">{e.unit}</div>
                     </div>
                     {e.note ? <div className="page-subtitle">{e.note}</div> : null}
-                    <div className="page-subtitle">{checked ? "選択中" : "未選択"}</div>
                   </button>
                 );
               })}
