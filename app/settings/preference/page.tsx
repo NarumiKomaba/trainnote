@@ -13,6 +13,8 @@ export default function PreferenceSettingsPage() {
   const [loading, setLoading] = useState(true);
   const skipInitialSave = useRef(true);
   const saveTimer = useRef<number | null>(null);
+  const sliderValue = preference === "easy" ? 0 : preference === "normal" ? 1 : 2;
+  const sliderPercent = (sliderValue / 2) * 100;
 
   useEffect(() => {
     (async () => {
@@ -80,10 +82,13 @@ export default function PreferenceSettingsPage() {
             min={0}
             max={2}
             step={1}
-            value={preference === "easy" ? 0 : preference === "normal" ? 1 : 2}
+            value={sliderValue}
             onChange={(e) => {
               const value = Number(e.target.value);
               setPreference(value === 0 ? "easy" : value === 1 ? "normal" : "hard");
+            }}
+            style={{
+              background: `linear-gradient(to right, #fb923c 0%, #fb923c ${sliderPercent}%, #e5e7eb ${sliderPercent}%, #e5e7eb 100%)`,
             }}
           />
           <div className="preference-slider__labels">

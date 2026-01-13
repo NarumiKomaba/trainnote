@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+const FAKE_UID = "demo-user";
 
 function formatMonthTitle(date: Date) {
   return `${date.getFullYear()}年${date.getMonth() + 1}月`;
@@ -12,11 +14,20 @@ function formatDayLabel(date: Date) {
   return date.getDate();
 }
 
+function formatDateKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default function AppHeader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const today = new Date();
+  const uid = FAKE_UID;
+  const today = useMemo(() => new Date(), []);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [stampMap, setStampMap] = useState<Record<string, string>>({});
   const dateOffsets = [-2, -1, 0, 1, 2];
   const dateList = dateOffsets.map((offset) => {
     const date = new Date(today);
@@ -37,7 +48,36 @@ export default function AppHeader() {
     }));
     return [...blanks, ...days];
   }, [daysInMonth, firstDayIndex]);
-  const stampedDays = new Set([1, 3, 7, 12, 18, 22, 27]);
+
+  useEffect(() => {
+    if (!isHome) return;
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    (async () => {
+      try {
+        const res = await fetch("/api/stamps/list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid,
+            startDate: formatDateKey(startOfMonth),
+            endDate: formatDateKey(endOfMonth),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) return;
+        const nextMap: Record<string, string> = {};
+        for (const stamp of data.stamps ?? []) {
+          if (stamp?.dateKey) {
+            nextMap[stamp.dateKey] = stamp.stampType ?? "done";
+          }
+        }
+        setStampMap(nextMap);
+      } catch {
+        setStampMap({});
+      }
+    })();
+  }, [isHome, today, uid]);
 
   if (isHome) {
     return (
@@ -103,7 +143,9 @@ export default function AppHeader() {
                   if (!day) {
                     return <div key={key} className="h-8" />;
                   }
-                  const hasStamp = stampedDays.has(day);
+                  const dateKey = formatDateKey(new Date(today.getFullYear(), today.getMonth(), day));
+                  const stampType = stampMap[dateKey];
+                  const hasStamp = Boolean(stampType && stampType !== "none");
                   const isToday = day === today.getDate();
                   return (
                     <div

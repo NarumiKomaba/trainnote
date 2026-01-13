@@ -8,13 +8,6 @@ import type { Equipment, TrainingPattern } from "@/lib/types";
 
 const FAKE_UID = "demo-user";
 
-const TYPE_OPTIONS: { value: TrainingPattern["type"]; label: string; hint: string }[] = [
-  { value: "training", label: "トレーニング", hint: "筋トレ/有酸素など（重量/回数/セット提案向き）" },
-  { value: "stretch", label: "ストレッチ", hint: "時間中心（durationMin提案）" },
-  { value: "recovery", label: "リカバリー", hint: "軽め/回復を優先" },
-  { value: "custom", label: "カスタム", hint: "自由に使う" },
-];
-
 export default function PatternEditPage() {
   const uid = FAKE_UID;
   const router = useRouter();
@@ -134,8 +127,6 @@ export default function PatternEditPage() {
     }
   }
 
-  const typeHint = TYPE_OPTIONS.find((o) => o.value === type)?.hint ?? "";
-
   return (
     <div className="page">
       <PageHeader
@@ -166,26 +157,6 @@ export default function PatternEditPage() {
               className="input"
             />
           </label>
-
-          <div className="stack gap-xs">
-            <span className="label">タイプ</span>
-            <div className="row" style={{ flexWrap: "wrap" }}>
-              {TYPE_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => setType(o.value)}
-                  className={`chip${type === o.value ? " chip--active" : ""}`}
-                >
-                  <div style={{ fontWeight: 700 }}>{o.label}</div>
-                  <div className="page-subtitle" style={{ marginTop: 2 }}>
-                    {o.hint}
-                  </div>
-                </button>
-              ))}
-            </div>
-            <div className="page-subtitle">{typeHint}</div>
-          </div>
 
           <label className="stack gap-xs">
             <span className="label">やること（自由記述）</span>

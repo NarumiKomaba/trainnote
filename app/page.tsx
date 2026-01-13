@@ -20,6 +20,7 @@ export default function AppHomePage() {
   const [plan, setPlan] = useState<DailyPlan | null>(null);
   const [items, setItems] = useState<WorkoutResultItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [equipmentMap, setEquipmentMap] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -50,8 +51,31 @@ export default function AppHomePage() {
     }
   }
 
+  async function loadEquipment() {
+    setMessage("");
+    try {
+      const res = await fetch("/api/equipment/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed to load equipment");
+      const nextMap: Record<string, string> = {};
+      for (const equip of data.equipment ?? []) {
+        if (equip?.id) {
+          nextMap[equip.id] = equip.name ?? equip.id;
+        }
+      }
+      setEquipmentMap(nextMap);
+    } catch (e: any) {
+      setMessage(e?.message ?? "Failed to load equipment");
+    }
+  }
+
   useEffect(() => {
     loadPlan();
+    loadEquipment();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -116,6 +140,7 @@ export default function AppHomePage() {
             <div className="stack">
               {items.map((it, idx) => {
                 const isEditing = editingIndex === idx;
+                const equipmentName = it.equipmentId ? equipmentMap[it.equipmentId] ?? "不明" : null;
                 return (
                   <div
                     key={idx}
@@ -137,6 +162,7 @@ export default function AppHomePage() {
                     <div className="row space-between workout-item-row">
                       <div className="stack gap-xs">
                         <span className="workout-title">{it.name}</span>
+                        {equipmentName ? <span className="page-subtitle">機材: {equipmentName}</span> : null}
                       </div>
                       <button
                         type="button"
