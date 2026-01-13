@@ -7,6 +7,7 @@ import type { DailyPlan, TrainingPattern, Equipment, UserSettings } from "@/lib/
 const ReqSchema = z.object({
   uid: z.string().min(1),
   dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  force: z.boolean().optional(),
 });
 
 function dayOfWeekFromDateKey(dateKey: string) {
@@ -21,12 +22,12 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { uid, dateKey } = parsed.data;
+  const { uid, dateKey, force } = parsed.data;
 
   // 既に作ってあればそれを返す（無駄生成防止）
   const planRef = adminDb.doc(`users/${uid}/dailyPlans/${dateKey}`);
   const existing = await planRef.get();
-  if (existing.exists) {
+  if (existing.exists && !force) {
     return NextResponse.json(existing.data());
   }
 

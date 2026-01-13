@@ -25,14 +25,14 @@ export default function AppHomePage() {
   const [message, setMessage] = useState<string>("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  async function loadPlan() {
+  async function loadPlan(force = false) {
     setLoading(true);
     setMessage("");
     try {
       const res = await fetch("/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, dateKey }),
+        body: JSON.stringify({ uid, dateKey, force }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ? JSON.stringify(data.error) : "Failed");
@@ -125,12 +125,24 @@ export default function AppHomePage() {
     <div className="page">
       {message ? <div className="notice">{message}</div> : null}
 
-      <section className="flex items-center gap-3">
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200" aria-label="進捗">
-          <div className="h-full rounded-full bg-orange-500" style={{ width: `${progressPercent}%` }} />
+      <section className="stack gap-xs">
+        <div className="flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200" aria-label="進捗">
+            <div className="h-full rounded-full bg-orange-500" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <div className="text-sm font-semibold text-slate-500">
+            {doneCount}/{allCount}
+          </div>
         </div>
-        <div className="text-sm font-semibold text-slate-500">
-          {doneCount}/{allCount}
+        <div className="row" style={{ justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            className="button button--ghost"
+            onClick={() => loadPlan(true)}
+            disabled={loading}
+          >
+            {loading ? "再生成中..." : "再生成"}
+          </button>
         </div>
       </section>
 
