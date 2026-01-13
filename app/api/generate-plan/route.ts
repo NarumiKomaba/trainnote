@@ -189,30 +189,70 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
     return cleaned.trim();
   };
 
+  async function parseGeminiJSON(rawText: string, allowRetry: boolean) {
+    try {
+      return JSON.parse(cleanJsonText(rawText));
+    } catch (error) {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          return JSON.parse(cleanJsonText(jsonMatch[0]));
+        } catch {
+          // fall through to retry logic
+        }
+      }
+      if (!allowRetry) {
+        throw error;
+      }
+      const repairPrompt = `
+You are a JSON repair tool.
+Return ONLY valid JSON that matches the provided schema.
+
+# Schema
+{
+  "dateKey": "YYYY-MM-DD",
+  "patternId": "${patternId}",
+  "theme": "string",
+  "items": [
+    {
+      "name": "string",
+      "equipmentId": "string|null",
+      "weight": "number|null",
+      "reps": "number|null",
+      "sets": "number|null",
+      "durationMin": "number|null",
+      "note": "string|null",
+      "reason": "string|null"
+    }
+  ]
+}
+
+# Input (fix to valid JSON only)
+${rawText}
+      `.trim();
+      console.info("[generate-plan] retrying json repair", { uid, dateKey, patternId });
+      const repairRes = await geminiGenerateJSON(repairPrompt);
+      const repairText =
+        repairRes?.candidates?.[0]?.content?.parts?.[0]?.text ?? JSON.stringify(repairRes);
+      console.info("[generate-plan] repair raw text", { uid, dateKey, patternId, text: repairText });
+      return JSON.parse(cleanJsonText(repairText));
+    }
+  }
+
   let planObj: any;
   try {
-    planObj = JSON.parse(cleanJsonText(text));
+    planObj = await parseGeminiJSON(text, true);
   } catch (error) {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error("[generate-plan] failed to parse JSON", { error, text });
-      return NextResponse.json(
-        { error: "Gemini returned non-JSON", raw: text },
-        { status: 502 }
-      );
-    }
-    try {
-      planObj = JSON.parse(cleanJsonText(jsonMatch[0]));
-    } catch (fallbackError) {
-      console.error("[generate-plan] failed to parse extracted JSON", {
-        error: fallbackError,
-        text: jsonMatch[0],
-      });
-      return NextResponse.json(
-        { error: "Gemini returned non-JSON", raw: text },
-        { status: 502 }
-      );
-    }
+    console.error("[generate-plan] failed to parse JSON", {
+      error,
+      text,
+      extracted: jsonMatch?.[0],
+    });
+    return NextResponse.json(
+      { error: "Gemini returned non-JSON", raw: text },
+      { status: 502 }
+    );
   }
 
   // 最低限の整形
