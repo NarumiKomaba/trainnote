@@ -128,6 +128,8 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
 - Propose a practical plan for TODAY based on pattern and recent logs.
 - Keep it short (5-8 items max).
 - For stretch/recovery patterns, use durationMin instead of weight.
+- Use equipment names from the provided equipment list whenever possible.
+- If an exercise is not in the equipment list, replace it with the closest equipment-based exercise.
 - Use equipmentId when it clearly matches an equipment item; otherwise set null.
 - Provide a brief reason per item.
 - Avoid unsafe advice. If user seems overtrained (many skips / high difficulty), lower intensity.
@@ -172,15 +174,32 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
   const text =
     gemini?.candidates?.[0]?.content?.parts?.[0]?.text ??
     JSON.stringify(gemini);
+  console.info("[generate-plan] gemini raw text", {
+    uid,
+    dateKey,
+    patternId,
+    text,
+  });
 
   let planObj: any;
   try {
     planObj = JSON.parse(text);
   } catch {
-    return NextResponse.json(
-      { error: "Gemini returned non-JSON", raw: text },
-      { status: 502 }
-    );
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return NextResponse.json(
+        { error: "Gemini returned non-JSON", raw: text },
+        { status: 502 }
+      );
+    }
+    try {
+      planObj = JSON.parse(jsonMatch[0]);
+    } catch {
+      return NextResponse.json(
+        { error: "Gemini returned non-JSON", raw: text },
+        { status: 502 }
+      );
+    }
   }
 
   // 最低限の整形
