@@ -169,11 +169,43 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
   }
 
   // 最低限の整形
+  const allowedIds = new Set(
+    pattern.allowedEquipmentIds?.length ? pattern.allowedEquipmentIds : equipments.map((e) => e.id)
+  );
+  const allowedNameMap = new Map(
+    equipments.map((e) => [e.name.toLowerCase(), e.id])
+  );
+
+  const normalizedItems = Array.isArray(planObj.items)
+    ? planObj.items.map((item: any) => {
+        const name = String(item.name ?? "");
+        let equipmentId = item.equipmentId ?? null;
+
+        if (equipmentId && !allowedIds.has(equipmentId)) {
+          equipmentId = null;
+        }
+
+        if (!equipmentId && name) {
+          for (const [equipName, equipId] of allowedNameMap.entries()) {
+            if (name.toLowerCase().includes(equipName)) {
+              equipmentId = equipId;
+              break;
+            }
+          }
+        }
+
+        if (equipmentId && !allowedIds.has(equipmentId)) {
+          equipmentId = null;
+        }
+
+        return { ...item, equipmentId };
+      })
+    : [];
   const plan: DailyPlan = {
     dateKey,
     patternId,
     theme: String(planObj.theme ?? pattern.name),
-    items: Array.isArray(planObj.items) ? planObj.items : [],
+    items: normalizedItems,
     createdAt: Date.now(),
     modelInfo: { provider: "gemini", model: "gemini-2.5-flash" },
   };

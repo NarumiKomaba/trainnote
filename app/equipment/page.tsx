@@ -112,6 +112,7 @@ export default function EquipmentPage() {
       <PageHeader
         title="機材"
         subtitle="使える道具・種目を登録して提案の材料にします。"
+        showBack
         actions={
           <button className="button button--ghost" onClick={load} disabled={loading}>
             更新

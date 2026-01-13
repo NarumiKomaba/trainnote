@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import PageHeader from "@/components/PageHeader";
 import type { DailyPlan, WorkoutResultItem } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuthのuidに差し替え
@@ -100,31 +99,20 @@ export default function AppHomePage() {
 
   return (
     <div className="page">
-      <PageHeader
-        title="今日のトレーニング"
-        meta={<span className="badge">{dateKey}</span>}
-      />
-
       {message ? <div className="notice">{message}</div> : null}
+
+      <section className="flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200" aria-label="進捗">
+          <div className="h-full rounded-full bg-orange-500" style={{ width: `${progressPercent}%` }} />
+        </div>
+        <div className="text-sm font-semibold text-slate-500">
+          {doneCount}/{allCount}
+        </div>
+      </section>
 
       <section>
         {plan ? (
           <div className="stack">
-            <div className="row space-between">
-              <div>
-                <div className="section-title">{plan.theme}</div>
-                <div className="page-subtitle">今日のメニュー</div>
-              </div>
-              <div className="progress" aria-label="進捗">
-                <div className="progress__track">
-                  <div className="progress__fill" style={{ width: `${progressPercent}%` }} />
-                </div>
-                <div className="progress__label">
-                  {doneCount}/{allCount}
-                </div>
-              </div>
-            </div>
-
             <div className="stack">
               {items.map((it, idx) => {
                 const isEditing = editingIndex === idx;
@@ -132,17 +120,21 @@ export default function AppHomePage() {
                   <div
                     key={idx}
                     className={`workout-item${it.done ? " workout-item--done" : ""}`}
-                    onClick={() => toggleDone(idx)}
+                    onClick={() => {
+                      if (editingIndex === idx) return;
+                      toggleDone(idx);
+                    }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
+                        if (editingIndex === idx) return;
                         e.preventDefault();
                         toggleDone(idx);
                       }
                     }}
                   >
-                    <div className="row space-between">
+                    <div className="row space-between workout-item-row">
                       <div className="stack gap-xs">
                         <span className="workout-title">{it.name}</span>
                       </div>

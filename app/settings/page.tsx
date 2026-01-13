@@ -1,239 +1,110 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
-import type { TrainingPattern, UserSettings, WeeklyRule } from "@/lib/types";
+import type { UserSettings } from "@/lib/types";
 
 const FAKE_UID = "demo-user"; // 後でAuth uidに差し替え
 
-const DOW_LABELS = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
-function defaultWeeklyRules(): WeeklyRule[] {
-  return Array.from({ length: 7 }).map((_, i) => ({
-    dayOfWeek: i,
-    patternId: null,
-  }));
-}
+const SETTINGS_SECTIONS = [
+  {
+    title: "基本設定",
+    items: [
+      { label: "提案の強度", href: "/settings/preference", valueKey: "preference" },
+      { label: "目標", href: "/settings/goal", valueKey: "goalText" },
+    ],
+  },
+  {
+    title: "トレーニング",
+    items: [
+      { label: "曜日ごとのパターン", href: "/settings/weekly" },
+      { label: "パターン管理", href: "/patterns" },
+      { label: "機材管理", href: "/equipment" },
+    ],
+  },
+];
 
 export default function SettingsPage() {
   const uid = FAKE_UID;
 
-  const [patterns, setPatterns] = useState<TrainingPattern[]>([]);
-  const [weeklyRules, setWeeklyRules] = useState<WeeklyRule[]>(defaultWeeklyRules());
   const [preference, setPreference] = useState<UserSettings["preference"]>("normal");
   const [goalText, setGoalText] = useState<string>("");
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<string>("");
-  const skipInitialSave = useRef(true);
-  const saveTimer = useRef<number | null>(null);
-
-  const patternOptions = useMemo(() => {
-    return [{ id: "", name: "休み（パターンなし）" }, ...patterns.map((p) => ({ id: p.id, name: p.name }))];
-  }, [patterns]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      setMsg("");
       try {
-        // patterns + settings を並行取得
-        const [pRes, sRes] = await Promise.all([
-          fetch("/api/patterns/list", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uid }),
-          }),
-          fetch("/api/settings/get", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uid }),
-          }),
-        ]);
+        const sRes = await fetch("/api/settings/get", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid }),
+        });
 
-        const pJson = await pRes.json();
         const sJson = await sRes.json();
 
-        if (!pRes.ok) throw new Error(pJson?.error ?? "Failed to load patterns");
         if (!sRes.ok) throw new Error(sJson?.error ?? "Failed to load settings");
-
-        setPatterns(pJson.patterns ?? []);
 
         const settings: UserSettings | null = sJson.settings ?? null;
 
         setPreference(settings?.preference ?? "normal");
         setGoalText(settings?.goalText ?? "");
-
-        // weeklyRules: 7日分を必ず揃える
-        const base = defaultWeeklyRules();
-        const incoming: WeeklyRule[] = settings?.weeklyRules ?? [];
-        const merged = base.map((b) => incoming.find((r) => r.dayOfWeek === b.dayOfWeek) ?? b);
-        setWeeklyRules(merged);
-      } catch (e: any) {
-        setMsg(e?.message ?? "Failed to load");
       } finally {
         setLoading(false);
       }
     })();
   }, [uid]);
 
-  function updateRule(dow: number, patternIdRaw: string) {
-    const patternId = patternIdRaw === "" ? null : patternIdRaw;
-    setWeeklyRules((prev) => prev.map((r) => (r.dayOfWeek === dow ? { ...r, patternId } : r)));
+  if (loading) {
+    return (
+      <div className="page">
+        <PageHeader title="設定" />
+        <div className="page-subtitle">読み込み中...</div>
+      </div>
+    );
   }
-
-  async function saveSettings() {
-    setSaving(true);
-    setMsg("");
-    try {
-      const res = await fetch("/api/settings/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid,
-          weeklyRules,
-          preference,
-          goalText,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? "Failed to save settings");
-    } catch (e: any) {
-      setMsg(e?.message ?? "Failed to save");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  useEffect(() => {
-    if (skipInitialSave.current) {
-      skipInitialSave.current = false;
-      return;
-    }
-    if (loading) return;
-    if (saveTimer.current) {
-      window.clearTimeout(saveTimer.current);
-    }
-    saveTimer.current = window.setTimeout(() => {
-      void saveSettings();
-    }, 500);
-
-    return () => {
-      if (saveTimer.current) {
-        window.clearTimeout(saveTimer.current);
-      }
-    };
-  }, [weeklyRules, preference, goalText, loading]);
 
   return (
     <div className="page">
-      <PageHeader
-        title="設定"
-        subtitle="曜日ごとのパターン割り当てと提案方針を調整します。"
-      />
+      <PageHeader title="設定" />
 
-      {msg ? <div className="notice">{msg}</div> : null}
-
-      <section className="card">
-        <div className="section-title">提案の強度</div>
-        <div className="preference-slider">
-          <input
-            type="range"
-            min={0}
-            max={2}
-            step={1}
-            value={preference === "easy" ? 0 : preference === "normal" ? 1 : 2}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              setPreference(value === 0 ? "easy" : value === 1 ? "normal" : "hard");
-            }}
-          />
-          <div className="preference-slider__labels">
-            <span>ゆるめ</span>
-            <span>標準</span>
-            <span>厳しめ</span>
+      {SETTINGS_SECTIONS.map((section) => (
+        <section key={section.title} className="card">
+          <div className="section-title">{section.title}</div>
+          <div className="stack gap-xs">
+            {section.items.map((item) => {
+              const value =
+                item.valueKey === "preference"
+                  ? preference === "easy"
+                    ? "ゆるめ"
+                    : preference === "hard"
+                      ? "厳しめ"
+                      : "標準"
+                  : item.valueKey === "goalText"
+                    ? goalText || "未設定"
+                    : "";
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="row space-between"
+                  style={{ padding: "10px 0", borderBottom: "1px solid #eef0f5" }}
+                >
+                  <div className="stack gap-xs">
+                    <span className="section-title">{item.label}</span>
+                    {item.valueKey ? <span className="page-subtitle">{value}</span> : null}
+                  </div>
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    chevron_right
+                  </span>
+                </Link>
+              );
+            })}
           </div>
-        </div>
-      </section>
-
-      <section className="card">
-        <div className="section-title">目標（自由記述）</div>
-        <div className="page-subtitle">例：週3回継続 / 体重-2kg / レッグプレスを伸ばしたい</div>
-        <textarea
-          value={goalText}
-          onChange={(e) => setGoalText(e.target.value)}
-          placeholder="例：週3回継続、脚の筋力UP、ストレッチ習慣"
-          className="textarea"
-        />
-      </section>
-
-      <section className="card">
-        <div className="row space-between">
-          <div className="section-title">曜日ごとのパターン</div>
-          <Link className="icon-button" href="/patterns" aria-label="パターンを編集">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              edit
-            </span>
-          </Link>
-        </div>
-        {loading ? (
-          <div className="page-subtitle">読み込み中...</div>
-        ) : (
-          <div className="stack">
-            {weeklyRules
-              .slice()
-              .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-              .map((r) => (
-                <div key={r.dayOfWeek} className="row space-between weekly-rule-row">
-                  <div className="badge">{DOW_LABELS[r.dayOfWeek]}</div>
-                  <select
-                    value={r.patternId ?? ""}
-                    onChange={(e) => updateRule(r.dayOfWeek, e.target.value)}
-                    className="select"
-                    style={{ maxWidth: 260 }}
-                  >
-                    {patternOptions.map((p) => (
-                      <option key={p.id || "rest"} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-          </div>
-        )}
-
-        {patterns.length === 0 && !loading ? (
-          <div className="notice warning">パターンがまだありません。先にパターン画面で作成してください。</div>
-        ) : null}
-      </section>
-
-      <section className="card">
-        <div className="section-title">パターン・機材の管理</div>
-        <div className="page-subtitle">作成・編集は各画面から行います。</div>
-        <div className="settings-links settings-links--compact">
-          <Link className="settings-link-card" href="/patterns">
-            <span className="settings-link-icon" aria-hidden="true">
-              📋
-            </span>
-            <div className="stack gap-xs">
-              <span className="settings-link-title">パターン</span>
-              <span className="page-subtitle">トレーニング構成を管理</span>
-            </div>
-          </Link>
-          <Link className="settings-link-card" href="/equipment">
-            <span className="settings-link-icon" aria-hidden="true">
-              🏋️
-            </span>
-            <div className="stack gap-xs">
-              <span className="settings-link-title">機材</span>
-              <span className="page-subtitle">使える機材を登録</span>
-            </div>
-          </Link>
-        </div>
-      </section>
+        </section>
+      ))}
     </div>
   );
 }

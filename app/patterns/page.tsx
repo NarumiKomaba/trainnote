@@ -50,6 +50,7 @@ export default function PatternsPage() {
       <PageHeader
         title="パターン"
         subtitle="今日やること＋使える機材をまとめて管理します。"
+        showBack
         actions={
           <div className="row">
             <Link className="button button--primary" href="/patterns/new">
@@ -74,7 +75,6 @@ export default function PatternsPage() {
                   <div className="section-title">{p.name}</div>
                   <div className="page-subtitle">{typeLabel(p.type)}</div>
                 </div>
-                <div className="page-subtitle">ID: {p.id}</div>
               </div>
 
               {p.description ? (
