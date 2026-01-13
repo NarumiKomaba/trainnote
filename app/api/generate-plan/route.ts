@@ -151,6 +151,14 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
 }
 `.trim();
 
+  console.info("[generate-plan] prompt", {
+    uid,
+    dateKey,
+    patternId,
+    equipmentCount: equipments.length,
+    prompt,
+  });
+
   const gemini = await geminiGenerateJSON(prompt);
 
   // gemini response parsing（responseMimeType=jsonでも、形式揺れがあり得るので念のため）
