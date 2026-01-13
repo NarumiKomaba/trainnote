@@ -160,6 +160,12 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
   });
 
   const gemini = await geminiGenerateJSON(prompt);
+  console.info("[generate-plan] gemini response", {
+    uid,
+    dateKey,
+    patternId,
+    response: gemini,
+  });
 
   // gemini response parsing（responseMimeType=jsonでも、形式揺れがあり得るので念のため）
   const text =
