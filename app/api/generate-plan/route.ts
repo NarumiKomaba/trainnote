@@ -181,20 +181,33 @@ recentLogs: ${JSON.stringify(recentLogs, null, 2)}
     text,
   });
 
+  const cleanJsonText = (input: string) => {
+    let cleaned = input.trim();
+    cleaned = cleaned.replace(/```json\s*([\s\S]*?)```/i, "$1");
+    cleaned = cleaned.replace(/```([\s\S]*?)```/i, "$1");
+    cleaned = cleaned.replace(/,\s*([}\]])/g, "$1");
+    return cleaned.trim();
+  };
+
   let planObj: any;
   try {
-    planObj = JSON.parse(text);
-  } catch {
+    planObj = JSON.parse(cleanJsonText(text));
+  } catch (error) {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error("[generate-plan] failed to parse JSON", { error, text });
       return NextResponse.json(
         { error: "Gemini returned non-JSON", raw: text },
         { status: 502 }
       );
     }
     try {
-      planObj = JSON.parse(jsonMatch[0]);
-    } catch {
+      planObj = JSON.parse(cleanJsonText(jsonMatch[0]));
+    } catch (fallbackError) {
+      console.error("[generate-plan] failed to parse extracted JSON", {
+        error: fallbackError,
+        text: jsonMatch[0],
+      });
       return NextResponse.json(
         { error: "Gemini returned non-JSON", raw: text },
         { status: 502 }
