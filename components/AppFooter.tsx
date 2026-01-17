@@ -10,30 +10,36 @@ export default function AppFooter() {
   const isSettings = pathname?.startsWith("/settings");
 
   const linkBase = "flex flex-col items-center gap-1 text-xs font-semibold";
-  const activeClass = "text-orange-500";
-  const inactiveClass = "text-slate-500";
+  const activeColor = "#ea580c"; // orange-600
+  const inactiveColor = "#94a3b8"; // slate-400
+
+  const renderItem = (href: string, label: string, iconName: string, isActive: boolean) => (
+    <Link
+      href={href}
+      className={linkBase}
+      style={{ color: isActive ? activeColor : inactiveColor }}
+    >
+      <span
+        className="material-symbols-outlined"
+        style={{
+          fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
+          fontSize: "24px",
+          color: isActive ? activeColor : inactiveColor
+        }}
+        aria-hidden="true"
+      >
+        {iconName}
+      </span>
+      <span style={{ fontWeight: isActive ? "700" : "600" }}>{label}</span>
+    </Link>
+  );
 
   return (
-    <footer className="sticky bottom-0 z-10 border-t border-slate-200 bg-white">
+    <footer className="sticky bottom-0 z-20 border-t border-slate-200 bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
       <nav className="mx-auto grid max-w-[760px] grid-cols-3 gap-2 px-4 py-2" aria-label="フッターナビ">
-        <Link className={`${linkBase} ${isDashboard ? activeClass : inactiveClass}`} href="/dashboard">
-          <span className="material-symbols-outlined" aria-hidden="true">
-            dashboard
-          </span>
-          <span>ダッシュボード</span>
-        </Link>
-        <Link className={`${linkBase} ${isRecord ? activeClass : inactiveClass}`} href="/">
-          <span className="material-symbols-outlined" aria-hidden="true">
-            edit_calendar
-          </span>
-          <span>記録</span>
-        </Link>
-        <Link className={`${linkBase} ${isSettings ? activeClass : inactiveClass}`} href="/settings">
-          <span className="material-symbols-outlined" aria-hidden="true">
-            settings
-          </span>
-          <span>設定</span>
-        </Link>
+        {renderItem("/dashboard", "ダッシュボード", "dashboard", isDashboard ?? false)}
+        {renderItem("/", "記録", "edit_calendar", isRecord)}
+        {renderItem("/settings", "設定", "settings", isSettings ?? false)}
       </nav>
     </footer>
   );

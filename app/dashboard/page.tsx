@@ -34,6 +34,11 @@ function habitScore(stampType: HabitPoint["stampType"]) {
 export default function DashboardPage() {
   const uid = FAKE_UID;
   const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({
+    completionRate: "0%",
+    streak: "0日",
+    maxWeight: "0kg",
+  });
   const [habitSeries, setHabitSeries] = useState<HabitPoint[]>([]);
   const [equipmentSeries, setEquipmentSeries] = useState<DashboardPayload["equipmentSeries"]>({});
   const equipmentOptions = Object.keys(equipmentSeries);
@@ -52,6 +57,9 @@ export default function DashboardPage() {
         if (!res.ok) throw new Error(json?.error ?? "Failed to load dashboard");
         setHabitSeries(json.habitSeries ?? []);
         setEquipmentSeries(json.equipmentSeries ?? {});
+        if (json.summary) {
+          setSummary(json.summary);
+        }
       } finally {
         setLoading(false);
       }
@@ -72,7 +80,7 @@ export default function DashboardPage() {
     const min = Math.min(...values);
     const range = Math.max(max - min, 1);
     return series.map((point, index) => {
-      const x = (index / (series.length - 1)) * 100;
+      const x = series.length > 1 ? (index / (series.length - 1)) * 100 : 50;
       const y = 100 - ((point.value - min) / range) * 100;
       return `${x},${y}`;
     });
@@ -80,13 +88,19 @@ export default function DashboardPage() {
 
   const dateLabels = habitSeries.map((point) => formatMonthDay(point.dateKey));
 
+  const summaryCards = [
+    { label: "週間達成率", value: summary.completionRate },
+    { label: "連続記録日数", value: summary.streak },
+    { label: "最大重量", value: summary.maxWeight },
+  ];
+
   return (
     <div className="page">
       <PageHeader title="ダッシュボード" />
       <section className="flex flex-col gap-3">
         <div className="text-sm font-semibold text-slate-500">集計</div>
         <div className="grid gap-3 sm:grid-cols-3">
-          {SUMMARY_CARDS.map((card) => (
+          {summaryCards.map((card) => (
             <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-4">
               <div className="text-xs text-slate-500">{card.label}</div>
               <div className="text-2xl font-bold text-slate-800">{card.value}</div>
@@ -108,9 +122,9 @@ export default function DashboardPage() {
                 const value = habitScore(point.stampType);
                 return (
                   <div key={point.dateKey} className="flex flex-1 flex-col items-center gap-2">
-                    <div className="flex h-24 w-full items-end rounded-full bg-slate-100">
+                    <div className="flex h-24 w-full items-end rounded-full bg-slate-100 overflow-hidden">
                       <div
-                        className="w-full rounded-full bg-orange-400"
+                        className="w-full rounded-t-full bg-orange-400"
                         style={{ height: `${value}%` }}
                         aria-label={`day-${index}`}
                       />

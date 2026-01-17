@@ -111,13 +111,7 @@ export default function EquipmentPage() {
     <div className="page">
       <PageHeader
         title="機材"
-        subtitle="使える道具・種目を登録して提案の材料にします。"
         showBack
-        actions={
-          <button className="button button--ghost" onClick={load} disabled={loading}>
-            更新
-          </button>
-        }
       />
 
       {msg ? <div className="notice">{msg}</div> : null}
@@ -187,17 +181,21 @@ export default function EquipmentPage() {
                   <div className="row space-between">
                     <div>
                       <div className="section-title">{e.name}</div>
-                      <div className="page-subtitle">unit: {e.unit} / id: {e.id}</div>
+                      <div className="page-subtitle">unit: {e.unit}</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => remove(e.id)}
+                      className="icon-button"
+                      aria-label={`${e.name}を削除`}
+                    >
+                      <span className="material-symbols-outlined" aria-hidden="true">
+                        delete
+                      </span>
+                    </button>
                   </div>
 
                   {e.note ? <div className="page-subtitle">{e.note}</div> : null}
-
-                  <div className="row" style={{ justifyContent: "flex-end" }}>
-                    <button onClick={() => remove(e.id)} className="button">
-                      削除
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>

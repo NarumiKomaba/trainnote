@@ -14,7 +14,7 @@ export async function geminiGenerateJSON(prompt: string) {
       generationConfig: {
         temperature: 0.3,
         topP: 0.9,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
       },
     }),

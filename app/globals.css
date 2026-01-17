@@ -95,6 +95,8 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
+  justify-content: flex-end;
 }
 
 .card {
@@ -402,6 +404,30 @@ a {
 
 .preference-slider input[type="range"] {
   width: 100%;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  outline: none;
+}
+
+.preference-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 999px;
+  background: #f97316;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.preference-slider input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 999px;
+  background: #f97316;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
 }
 
 .preference-slider__labels {
@@ -420,5 +446,99 @@ a {
 @media (min-width: 768px) {
   .page {
     padding: 24px;
+  }
+}
+
+/* 再生成セクションの改善 */
+.regen-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.regen-group {
+  display: flex;
+  align-items: stretch;
+  background: #f1f4fa;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #d9dbe2;
+  height: 38px;
+}
+
+.regen-input-box {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 10px;
+  padding-right: 6px;
+  background: #ffffff;
+  border-right: 1px solid #d9dbe2;
+}
+
+.regen-input-box span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.regen-input-box input {
+  width: 28px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: right;
+  font-weight: 700;
+  color: #111827;
+  outline: none;
+  font-size: 14px;
+}
+
+/* Chrome, Safari, Edge, Opera のスピンボタン（上下矢印）を消す */
+.regen-input-box input::-webkit-outer-spin-button,
+.regen-input-box input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox のスピンボタンを消す */
+.regen-input-box input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.regen-btn {
+  border: none;
+  background: transparent;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+}
+
+.regen-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.regen-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.regen-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
