@@ -271,20 +271,62 @@ ${rawText}
     }
   }
 
-  let planObj: any;
-  try {
-    planObj = await parseGeminiJSON(text, true);
-  } catch (error) {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    console.error("[generate-plan] failed to parse JSON", {
-      error,
-      text,
-      extracted: jsonMatch?.[0],
-    });
+  async function parseWithFallback(rawText: string, allowRetry: boolean) {
+    try {
+      return await parseGeminiJSON(rawText, allowRetry);
+    } catch (error) {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      console.error("[generate-plan] failed to parse JSON", {
+        error,
+        text: rawText,
+        extracted: jsonMatch?.[0],
+      });
+      return null;
+    }
+  }
+
+  let planObj: any = await parseWithFallback(text, true);
+  if (!planObj) {
     return NextResponse.json(
       { error: "Gemini returned non-JSON", raw: text },
       { status: 502 }
     );
+  }
+
+  const needsRegenerate =
+    !Array.isArray(planObj.items) ||
+    planObj.items.length < 3 ||
+    planObj.items.every(
+      (item: any) =>
+        item.reps == null && item.sets == null && item.durationMin == null
+    );
+
+  if (needsRegenerate) {
+    const retryPrompt = `
+${prompt}
+
+# Strict output requirements
+- MUST return 5-8 items.
+- For training items, reps and sets must be numbers (not null).
+- For cardio/stretch items, durationMin must be a number (not null).
+- Avoid returning a single-item plan.
+    `.trim();
+    console.info("[generate-plan] retrying generation with strict requirements", {
+      uid,
+      dateKey,
+      patternId,
+    });
+    const retryRes = await geminiGenerateJSON(retryPrompt);
+    const retryText =
+      retryRes?.candidates?.[0]?.content?.parts?.[0]?.text ?? JSON.stringify(retryRes);
+    console.info("[generate-plan] retry raw text", { uid, dateKey, patternId, text: retryText });
+    planObj = await parseWithFallback(retryText, true);
+    if (!planObj) {
+      return NextResponse.json(
+        { error: "Gemini returned non-JSON", raw: retryText },
+        { status: 502 }
+      );
+    }
   }
 
   // 最低限の整形
