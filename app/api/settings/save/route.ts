@@ -13,6 +13,7 @@ const ReqSchema = z.object({
   weeklyRules: z.array(WeeklyRuleSchema).length(7),
   preference: z.enum(["easy", "normal", "hard"]),
   goalText: z.string().optional(),
+  availableTimeMin: z.number().int().min(1).optional(),
 });
 
 export async function POST(req: Request) {
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { uid, weeklyRules, preference, goalText } = parsed.data;
+  const { uid, weeklyRules, preference, goalText, availableTimeMin } = parsed.data;
 
   // dayOfWeek重複排除・正規化（念のため）
   const normalized = Array.from({ length: 7 }).map((_, i) => {
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
     weeklyRules: normalized,
     preference,
     goalText: goalText ?? "",
+    availableTimeMin,
     updatedAt: Date.now(),
   };
 

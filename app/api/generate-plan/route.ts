@@ -8,6 +8,7 @@ const ReqSchema = z.object({
   uid: z.string().min(1),
   dateKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   force: z.boolean().optional(),
+  availableTimeMin: z.number().int().min(1).optional(),
 });
 
 function dayOfWeekFromDateKey(dateKey: string) {
@@ -22,13 +23,29 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { uid, dateKey, force } = parsed.data;
+  const { uid, dateKey, force, availableTimeMin: reqTimeMin } = parsed.data;
 
   // 既に作ってあればそれを返す（無駄生成防止）
   const planRef = adminDb.doc(`users/${uid}/dailyPlans/${dateKey}`);
   const existing = await planRef.get();
   if (existing.exists && !force) {
-    return NextResponse.json(existing.data());
+    const planData = existing.data() as DailyPlan;
+    // 保存済みの実績（実績ログ）があればマージして返す
+    const logSnap = await adminDb.doc(`users/${uid}/workoutLogs/${dateKey}`).get();
+    if (logSnap.exists) {
+      const logData = logSnap.data();
+      if (logData?.items) {
+        // 名前かインデックスでマージ（基本はインデックス一致を想定）
+        planData.items = planData.items.map((it, idx) => {
+          const logItem = logData.items[idx];
+          if (logItem && logItem.name === it.name) {
+            return { ...it, ...logItem };
+          }
+          return it;
+        });
+      }
+    }
+    return NextResponse.json(planData);
   }
 
   // settings
@@ -81,6 +98,7 @@ export async function POST(req: Request) {
 
   const preference = settings?.preference ?? "normal";
   const goalText = settings?.goalText ?? "";
+  const availableTimeMin = reqTimeMin ?? settings?.availableTimeMin ?? null;
 
   // --- Gemini Prompt ---
   const prompt = `
@@ -89,6 +107,7 @@ Return ONLY JSON that matches the schema exactly.
 
 # Today
 dateKey: "${dateKey}"
+availableTimeMin: ${availableTimeMin ?? "Not specified"} // Estimated training duration in minutes
 
 # Pattern
 pattern = ${JSON.stringify(
@@ -125,14 +144,27 @@ goalText: ${JSON.stringify(goalText)}
 recentLogs: ${JSON.stringify(recentLogs, null, 2)}
 
 # Requirements
-- Propose a practical plan for TODAY based on pattern and recent logs.
-- Keep it short (5-8 items max).
+- Propose a practical and comprehensive plan for TODAY based on pattern, recent logs, and available time.
+- ${availableTimeMin ? `The plan MUST be completed within **${availableTimeMin} minutes**. Adjust the volume (number of exercises, sets, or reps) accordingly.` : "The plan MUST contain **5 to 8 exercises**. Do not generate fewer than 5 items."}
+- All "name", "theme", "note", and "reason" fields MUST be in **Japanese**.
 - For stretch/recovery patterns, use durationMin instead of weight.
-- Use equipment names from the provided equipment list whenever possible.
-- If an exercise is not in the equipment list, replace it with the closest equipment-based exercise.
-- Use equipmentId when it clearly matches an equipment item; otherwise set null.
-- Provide a brief reason per item.
-- Avoid unsafe advice. If user seems overtrained (many skips / high difficulty), lower intensity.
+- **You MUST use the provided equipment list.**
+- if an equipment matches, you MUST set "equipmentId" to the exact string ID from the list.
+- If no equipment is needed (bodyweight), set "equipmentId" to null.
+- Provide a brief reason per item explaining why it fits the theme.
+- **Specific Action Instructions**:
+  - The goal is "Just do what is told to achieve results".
+  - DO NOT provide vague instructions like "Walk for 5 mins".
+  - INSTEAD, provide specific parameters in the 'note' field: (e.g., "Treadmill: 6km/h for 3 mins, then 8km/h for 2 mins", "Dynamic stretching: rotate shoulders 10 times, etc").
+  - Even if the title is general (e.g. "Warming up"), the 'note' MUST be specific.
+- **Weight Logic Instructions**:
+  - **Case 1: New Exercise (No history in recentLogs)**
+    - Set 'weight' to 'null'.
+    - In the 'note' field, integrate the weight guideline with the action instructions (e.g., "Adjust to a weight you can barely lift 10 times. Focus on form.").
+  - **Case 2: Existing Exercise (Found in recentLogs)**
+    - Apply **Progressive Overload**: Suggest a slightly heavier weight OR the same weight with more reps/sets than the last time.
+    - In the 'reason' field, explicitly state the comparison (e.g., "Previous: 60kg x 10 → Challenge: 62.5kg").
+- Avoid unsafe advice. If user seems overtrained, lower intensity.
 
 # Output JSON Schema
 {
@@ -265,28 +297,28 @@ ${rawText}
 
   const normalizedItems = Array.isArray(planObj.items)
     ? planObj.items.map((item: any) => {
-        const name = String(item.name ?? "");
-        let equipmentId = item.equipmentId ?? null;
+      const name = String(item.name ?? "");
+      let equipmentId = item.equipmentId ?? null;
 
-        if (equipmentId && !allowedIds.has(equipmentId)) {
-          equipmentId = null;
-        }
+      if (equipmentId && !allowedIds.has(equipmentId)) {
+        equipmentId = null;
+      }
 
-        if (!equipmentId && name) {
-          for (const [equipName, equipId] of allowedNameMap.entries()) {
-            if (name.toLowerCase().includes(equipName)) {
-              equipmentId = equipId;
-              break;
-            }
+      if (!equipmentId && name) {
+        for (const [equipName, equipId] of allowedNameMap.entries()) {
+          if (name.toLowerCase().includes(equipName)) {
+            equipmentId = equipId;
+            break;
           }
         }
+      }
 
-        if (equipmentId && !allowedIds.has(equipmentId)) {
-          equipmentId = null;
-        }
+      if (equipmentId && !allowedIds.has(equipmentId)) {
+        equipmentId = null;
+      }
 
-        return { ...item, equipmentId };
-      })
+      return { ...item, equipmentId };
+    })
     : [];
   const plan: DailyPlan = {
     dateKey,

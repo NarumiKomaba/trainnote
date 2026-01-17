@@ -31,6 +31,7 @@ export type UserSettings = {
   weeklyRules: WeeklyRule[];
   preference: "easy" | "normal" | "hard";
   goalText?: string;         // まずは自由記述でOK
+  availableTimeMin?: number; // トレーニングに使える時間
   updatedAt: number;
 };
 

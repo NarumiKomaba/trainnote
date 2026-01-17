@@ -24,15 +24,20 @@ export default function AppHomePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [customTimeMin, setCustomTimeMin] = useState<number | "">("");
 
   async function loadPlan(force = false) {
     setLoading(true);
     setMessage("");
     try {
+      const body: any = { uid, dateKey, force };
+      if (customTimeMin) {
+        body.availableTimeMin = Number(customTimeMin);
+      }
       const res = await fetch("/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, dateKey, force }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ? JSON.stringify(data.error) : "Failed");
@@ -40,7 +45,7 @@ export default function AppHomePage() {
       setPlan(data);
       const init: WorkoutResultItem[] = (data.items ?? []).map((it: any) => ({
         ...it,
-        done: false,
+        done: it.done ?? false,
       }));
       setItems(init);
       setEditingIndex(null);
@@ -84,7 +89,12 @@ export default function AppHomePage() {
   const progressPercent = allCount === 0 ? 0 : Math.round((doneCount / allCount) * 100);
 
   function updateItem(idx: number, patch: Partial<WorkoutResultItem>) {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+    setItems((prev) => {
+      const next = prev.map((it, i) => (i === idx ? { ...it, ...patch } : it));
+      // 入力時に即保存
+      void save(next);
+      return next;
+    });
   }
 
   async function save(nextItems: WorkoutResultItem[]) {
@@ -134,15 +144,30 @@ export default function AppHomePage() {
             {doneCount}/{allCount}
           </div>
         </div>
-        <div className="row" style={{ justifyContent: "flex-end" }}>
-          <button
-            type="button"
-            className="button button--ghost"
-            onClick={() => loadPlan(true)}
-            disabled={loading}
-          >
-            {loading ? "再生成中..." : "再生成"}
-          </button>
+        <div className="regen-container">
+          <div className="regen-group">
+            <div className="regen-input-box">
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>timer</span>
+              <input
+                type="number"
+                placeholder="--"
+                value={customTimeMin}
+                onChange={(e) => setCustomTimeMin(e.target.value === "" ? "" : Number(e.target.value))}
+              />
+              <span>分</span>
+            </div>
+            <button
+              type="button"
+              className="regen-btn"
+              onClick={() => loadPlan(true)}
+              disabled={loading}
+              aria-label={loading ? "再生成中" : "再生成"}
+            >
+              <span className="material-symbols-outlined" style={{ animation: loading ? "spin 2s linear infinite" : "none" }}>
+                {loading ? "sync" : "restart_alt"}
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -158,7 +183,6 @@ export default function AppHomePage() {
                     key={idx}
                     className={`workout-item${it.done ? " workout-item--done" : ""}`}
                     onClick={() => {
-                      if (editingIndex === idx) return;
                       toggleDone(idx);
                     }}
                     role="button"
@@ -174,40 +198,43 @@ export default function AppHomePage() {
                     <div className="row space-between workout-item-row">
                       <div className="stack gap-xs">
                         <span className="workout-title">{it.name}</span>
-                        {equipmentName ? <span className="page-subtitle">機材: {equipmentName}</span> : null}
                       </div>
                       <button
                         type="button"
                         className="icon-button"
-                        aria-label={isEditing ? "編集を閉じる" : "編集する"}
+                        aria-label={isEditing ? "閉じる" : "詳細を開く"}
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingIndex(isEditing ? null : idx);
                         }}
                       >
                         <span className="material-symbols-outlined" aria-hidden="true">
-                          {isEditing ? "close" : "edit"}
+                          {isEditing ? "expand_less" : "expand_more"}
                         </span>
                       </button>
                     </div>
 
                     {isEditing ? (
-                      <div className="workout-fields">
-                        <Field
-                          label="重量(kg)"
-                          value={it.weight ?? ""}
-                          onChange={(v) => updateItem(idx, { weight: v === "" ? null : Number(v) })}
-                        />
-                        <Field
-                          label="回数"
-                          value={it.reps ?? ""}
-                          onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
-                        />
-                        <Field
-                          label="セット"
-                          value={it.sets ?? ""}
-                          onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
-                        />
+                      <div className="stack gap-sm mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        {it.note ? <div className="text-xs text-slate-500 mb-2">📝 {it.note}</div> : null}
+
+                        <div className="row gap-xs">
+                          <Field
+                            label="重量(kg)"
+                            value={it.weight ?? ""}
+                            onChange={(v) => updateItem(idx, { weight: v === "" ? null : v.endsWith(".") ? (it.weight ?? 0) : Number(v) })}
+                          />
+                          <Field
+                            label="回数"
+                            value={it.reps ?? ""}
+                            onChange={(v) => updateItem(idx, { reps: v === "" ? null : Number(v) })}
+                          />
+                          <Field
+                            label="セット"
+                            value={it.sets ?? ""}
+                            onChange={(v) => updateItem(idx, { sets: v === "" ? null : Number(v) })}
+                          />
+                        </div>
                       </div>
                     ) : (
                       <div className="workout-metrics">
@@ -239,8 +266,10 @@ function Field({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="stack gap-xs">
-      <span className="label">{label}</span>
+    <label className="stack gap-xs" style={{ flex: 1, minWidth: 0 }}>
+      <span className="label" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        {label}
+      </span>
       <input
         className="input"
         value={value}
@@ -252,6 +281,6 @@ function Field({
 }
 
 function formatMetric(value: number | null | undefined, suffix = "") {
-  if (value === null || value === undefined || value === "") return "-";
+  if (value === null || value === undefined) return "-";
   return `${value}${suffix}`;
 }
